@@ -16,7 +16,6 @@
         }
         .product-card {
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            cursor: pointer;
         }
         .product-card:hover {
             transform: translateY(-5px);
@@ -28,12 +27,6 @@
         .text-marjorie-dark {
             color: #333;
         }
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .hidden {
-            display: none;
-        }
     </style>
 </head>
 <body class="text-marjorie-dark">
@@ -43,13 +36,9 @@
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-marjorie-dark">瑪裘瑞臨時特賣</h1>
             <div class="flex items-center space-x-4">
-                <!-- 購物車按鈕 -->
-                <button id="cart-btn" class="relative text-gray-600 hover:text-marjorie-dark p-2 rounded-full hover:bg-gray-100 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13v6a2 2 0 002 2h4a2 2 0 002-2v-6M13 13v6a2 2 0 01-2 2h-4a2 2 0 01-2-2v-6" />
-                    </svg>
-                    <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
-                </button>
+                <a href="https://www.facebook.com/" target="_blank" class="text-gray-600 hover:text-marjorie-dark p-2 rounded-full hover:bg-gray-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm3 8h-1.35c-.538 0-.65.221-.65.778v1.222h2l-.209 2h-1.791v7h-3v-7h-2v-2h2v-1.82c0-2.042 1.144-3.18 3.279-3.18h1.721v3z"/></svg>
+                </a>
             </div>
         </div>
     </header>
@@ -71,349 +60,39 @@
         </div>
     </footer>
 
-    <!-- 商品詳情燈箱 (Modal) -->
-    <div id="product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
-        <div class="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full mx-4 relative">
-            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            <div id="modal-content" class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
-                <img id="modal-image" class="w-full md:w-1/2 rounded-lg" src="" alt="商品圖片">
-                <div class="flex-1">
-                    <h3 id="modal-name" class="text-2xl font-bold text-marjorie-dark"></h3>
-                    <p id="modal-specs" class="text-marjorie-gray text-base mt-2"></p>
-                    <p id="modal-color" class="text-marjorie-gray text-base"></p>
-                    <div class="mt-4 flex items-center">
-                        <p id="modal-original-price" class="text-marjorie-gray text-base line-through mr-2"></p>
-                        <p id="modal-sale-price" class="text-marjorie-dark text-xl font-bold"></p>
-                    </div>
-                    <button id="add-to-cart-btn" class="mt-6 w-full py-3 bg-marjorie-dark text-white rounded-md hover:bg-gray-700 transition-colors">加入購物車</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 購物車燈箱 (Modal) -->
-    <div id="cart-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
-        <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4 relative">
-            <button id="close-cart-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            <h3 class="text-2xl font-bold text-marjorie-dark mb-4">我的購物車 (<span id="cart-item-count">0</span>)</h3>
-            <div id="cart-items" class="space-y-4">
-                <!-- 購物車商品將由 JavaScript 動態生成 -->
-            </div>
-            <div class="mt-6 text-center">
-                <p id="cart-empty-message" class="text-marjorie-gray">購物車是空的</p>
-                <button class="w-full py-3 bg-marjorie-dark text-white rounded-md opacity-50 cursor-not-allowed">前往結帳</button>
-            </div>
-        </div>
-    </div>
-
     <!-- JavaScript 動態生成商品卡片與功能 -->
     <script>
-        // 產品資料，新增了唯一的 id
+        // 產品資料，包含庫存
         const products = [
-            {
-                id: 1,
-                name: "經典棉質T恤",
-                specs: "寬鬆版型",
-                color: "米白 / 黑色",
-                originalPrice: 1280,
-                salePrice: 980,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+1"
-            },
-            {
-                id: 2,
-                name: "高腰牛仔長褲",
-                specs: "彈性舒適",
-                color: "淺藍 / 深藍",
-                originalPrice: 2200,
-                salePrice: 1880,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+2"
-            },
-            {
-                id: 3,
-                name: "V領針織背心",
-                specs: "柔軟親膚",
-                color: "燕麥 / 焦糖",
-                originalPrice: 1560,
-                salePrice: 1280,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+3"
-            },
-            {
-                id: 4,
-                name: "蕾絲花邊襯衫",
-                specs: "氣質優雅",
-                color: "白色 / 杏色",
-                originalPrice: 1890,
-                salePrice: 1590,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+4"
-            },
-            {
-                id: 5,
-                name: "寬鬆休閒短褲",
-                specs: "透氣材質",
-                color: "卡其 / 軍綠",
-                originalPrice: 990,
-                salePrice: 790,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+5"
-            },
-            {
-                id: 6,
-                name: "復古小碎花洋裝",
-                specs: "浪漫風格",
-                color: "藍色 / 粉色",
-                originalPrice: 2600,
-                salePrice: 2180,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+6"
-            },
-            {
-                id: 7,
-                name: "單肩斜背包",
-                specs: "輕巧實用",
-                color: "黑色 / 棕色",
-                originalPrice: 1450,
-                salePrice: 1180,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+7"
-            },
-            {
-                id: 8,
-                name: "厚底休閒鞋",
-                specs: "舒適百搭",
-                color: "白色 / 奶油色",
-                originalPrice: 2800,
-                salePrice: 2380,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+8"
-            },
-            {
-                id: 9,
-                name: "法式貝蕾帽",
-                specs: "羊毛材質",
-                color: "黑色 / 灰色",
-                originalPrice: 850,
-                salePrice: 690,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+9"
-            },
-            {
-                id: 10,
-                name: "簡約純銀項鍊",
-                specs: "精緻小巧",
-                color: "銀色 / 金色",
-                originalPrice: 1100,
-                salePrice: 890,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+10"
-            },
-            {
-                id: 11,
-                name: "修身短版上衣",
-                specs: "彈性針織",
-                color: "米白 / 黑色",
-                originalPrice: 1200,
-                salePrice: 950,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+11"
-            },
-            {
-                id: 12,
-                name: "多層次百褶裙",
-                specs: "輕盈飄逸",
-                color: "卡其 / 藍灰",
-                originalPrice: 1650,
-                salePrice: 1380,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+12"
-            },
-            {
-                id: 13,
-                name: "小香風外套",
-                specs: "經典菱格紋",
-                color: "黑色 / 米色",
-                originalPrice: 3500,
-                salePrice: 2980,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+13"
-            },
-            {
-                id: 14,
-                name: "直筒休閒褲",
-                specs: "硬挺版型",
-                color: "米白 / 淺灰",
-                originalPrice: 1980,
-                salePrice: 1680,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+14"
-            },
-            {
-                id: 15,
-                name: "長袖條紋襯衫",
-                specs: "日系風格",
-                color: "藍白 / 紅棕",
-                originalPrice: 1450,
-                salePrice: 1150,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+15"
-            },
-            {
-                id: 16,
-                name: "復古皮革短靴",
-                specs: "耐磨防滑",
-                color: "黑色 / 深棕",
-                originalPrice: 3200,
-                salePrice: 2880,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+16"
-            },
-            {
-                id: 17,
-                name: "毛茸茸漁夫帽",
-                specs: "冬季保暖",
-                color: "奶茶色 / 黑色",
-                originalPrice: 950,
-                salePrice: 790,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+17"
-            },
-            {
-                id: 18,
-                name: "麻花編織毛衣",
-                specs: "厚實溫暖",
-                color: "灰色 / 駝色",
-                originalPrice: 1990,
-                salePrice: 1590,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+18"
-            },
-            {
-                id: 19,
-                name: "格紋西裝外套",
-                specs: "英倫風格",
-                color: "棕色 / 灰色",
-                originalPrice: 3800,
-                salePrice: 3280,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+19"
-            },
-            {
-                id: 20,
-                name: "垂墜感寬褲",
-                specs: "絲滑面料",
-                color: "黑色 / 莫蘭迪綠",
-                originalPrice: 1750,
-                salePrice: 1480,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+20"
-            },
-            {
-                id: 21,
-                name: "鏤空針織上衣",
-                specs: "若隱若現",
-                color: "白色 / 黑色",
-                originalPrice: 1350,
-                salePrice: 1080,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+21"
-            },
-            {
-                id: 22,
-                name: "小碎花雪紡襯衫",
-                specs: "輕盈飄逸",
-                color: "粉色 / 藍色",
-                originalPrice: 1600,
-                salePrice: 1290,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+22"
-            },
-            {
-                id: 23,
-                name: "抽繩束口後背包",
-                specs: "多功能",
-                color: "卡其 / 黑色",
-                originalPrice: 2100,
-                salePrice: 1780,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+23"
-            },
-            {
-                id: 24,
-                name: "貓眼墨鏡",
-                specs: "復古造型",
-                color: "黑色 / 玳瑁",
-                originalPrice: 980,
-                salePrice: 790,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+24"
-            },
-            {
-                id: 25,
-                name: "羊羔毛外套",
-                specs: "超保暖",
-                color: "米白 / 焦糖",
-                originalPrice: 3900,
-                salePrice: 3380,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+25"
-            },
-            {
-                id: 26,
-                name: "高腰A字短裙",
-                specs: "修飾腿型",
-                color: "黑色 / 咖啡色",
-                originalPrice: 1100,
-                salePrice: 890,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+26"
-            },
-            {
-                id: 27,
-                name: "簡約連帽上衣",
-                specs: "日常穿搭",
-                color: "灰色 / 海軍藍",
-                originalPrice: 1250,
-                salePrice: 990,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+27"
-            },
-            {
-                id: 28,
-                name: "休閒帆布鞋",
-                specs: "經典款",
-                color: "白色 / 黑色",
-                originalPrice: 1990,
-                salePrice: 1680,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+28"
-            },
-            {
-                id: 29,
-                name: "格紋長版襯衫",
-                specs: "可當外套",
-                color: "綠色 / 紅色",
-                originalPrice: 1700,
-                salePrice: 1390,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+29"
-            },
-            {
-                id: 30,
-                name: "高領羅紋針織衫",
-                specs: "顯瘦版型",
-                color: "米白 / 黑色",
-                originalPrice: 1450,
-                salePrice: 1190,
-                imageUrl: "https://placehold.co/600x800/e5e7eb/6b7280?text=商品+30"
-            },
             {
                 id: 31,
                 name: "巴黎復古詩歌，經典小香風圓領外套",
                 specs: "香檳金",
                 color: "香檳金",
                 originalPrice: 3980,
-                salePrice: 3280,
-                imageUrl: "uploaded:巴黎復古詩歌，經典小香風圓領外套 香檳金.jpg-e835e3f9-ecbd-450e-a774-7e8b786a5a30"
+                salePrice: 2980,
+                imageUrl: "https://i.ibb.co/WvjG9NLt/image.jpg",
+                stock: 1
             },
             {
                 id: 32,
                 name: "珍妮，針織無袖短版上衣",
-                specs: "針織",
+                specs: "XS",
                 color: "焦糖橘",
-                originalPrice: 1180,
-                salePrice: 890,
-                imageUrl: "uploaded:珍妮，針織無袖短版上衣 焦糖橘.jpg-389c2c98-39ba-4024-9530-6c2a748357d1"
+                originalPrice: 980,
+                salePrice: 390,
+                imageUrl: "https://i.ibb.co/VpwCmB1k/image.jpg",
+                stock: 1
             },
             {
                 id: 33,
                 name: "珍妮，針織無袖短版上衣",
-                specs: "針織",
+                specs: "XS",
                 color: "米白",
-                originalPrice: 1180,
-                salePrice: 890,
-                imageUrl: "uploaded:珍妮，針織無袖短版上衣 米白.jpg-4762e8e7-8941-4485-bd7d-2b8b24577ae4"
+                originalPrice: 980,
+                salePrice: 390,
+                imageUrl: "https://i.ibb.co/fGysB14q/image.jpg",
+                stock: 1
             },
             {
                 id: 34,
@@ -422,7 +101,18 @@
                 color: "白",
                 originalPrice: 1590,
                 salePrice: 1290,
-                imageUrl: "uploaded:一時的黑夜，側排扣造型極簡上衣 白.jpg-029dc536-d862-4e6e-a6a0-1327f2b7af9d"
+                imageUrl: "https://i.ibb.co/prkNs9gS/image.jpg",
+                stock: 3
+            },
+			{
+                id: 43,
+                name: "知識分子短版劍領灰色西裝外套",
+                specs: "L",
+                color: "深灰",
+                originalPrice: 4280,
+                salePrice: 2980,
+                imageUrl: "https://i.ibb.co/dsQNMvxd/image.jpg",
+                stock: 2
             },
             {
                 id: 35,
@@ -430,8 +120,9 @@
                 specs: "透膚緹花",
                 color: "白",
                 originalPrice: 1790,
-                salePrice: 1490,
-                imageUrl: "uploaded:純白幻想，透膚緹花綁帶襯衫 白.jpg-bce3b7f1-b9d8-4f64-b1d0-ffe3757cc6b9"
+                salePrice: 1390,
+                imageUrl: "https://i.ibb.co/7tJNpNfL/image.jpg",
+                stock: 2
             },
             {
                 id: 36,
@@ -440,7 +131,8 @@
                 color: "白",
                 originalPrice: 1890,
                 salePrice: 1590,
-                imageUrl: "uploaded:奢式年華，高雅蕾絲袖襯衫 白.jpg-f78ae55b-6bd7-4861-854f-c8f2cf7e8f7e"
+                imageUrl: "https://i.ibb.co/C3qZLs4q/image.jpg",
+                stock: 1
             },
             {
                 id: 37,
@@ -449,7 +141,8 @@
                 color: "深灰",
                 originalPrice: 1650,
                 salePrice: 1380,
-                imageUrl: "uploaded:生性倔強，雙開衩打褶褲裙 深灰.jpg-a84dc1d0-1f43-4903-be72-db7c2326b8e9"
+                imageUrl: "https://i.ibb.co/xStrTxnN/image.jpg",
+                stock: 5
             },
             {
                 id: 38,
@@ -458,7 +151,8 @@
                 color: "白",
                 originalPrice: 1490,
                 salePrice: 1190,
-                imageUrl: "uploaded:扎根，雙排包釦造型簡約短褲.jpg-5403cc80-5e08-43e8-9634-4eb46ff36594"
+                imageUrl: "https://i.ibb.co/5Wt4yKf1/image.jpg",
+                stock: 0
             },
             {
                 id: 39,
@@ -467,7 +161,18 @@
                 color: "黑",
                 originalPrice: 2280,
                 salePrice: 1980,
-                imageUrl: "uploaded:現代游牧，雙釦反褶牛仔寬褲 黑.jpg-72e900dc-080a-412b-aa0c-0382a65caaf9"
+                imageUrl: "https://i.ibb.co/RTLSn66h/image.jpg",
+                stock: 4
+            },
+			{
+                id: 42,
+                name: "現代游牧，雙釦反褶牛仔寬褲",
+                specs: "牛仔寬褲",
+                color: "白",
+                originalPrice: 2280,
+                salePrice: 1980,
+                imageUrl: "https://i.ibb.co/Qj1FtwT0/image.jpg",
+                stock: 4
             },
             {
                 id: 40,
@@ -476,33 +181,43 @@
                 color: "藍格",
                 originalPrice: 1750,
                 salePrice: 1480,
-                imageUrl: "uploaded:停下腳步前，造型腰頭百褶格紋短褲 藍格.jpg-d021d0d5-d91b-4f9d-9a05-7223afaf394b"
+                imageUrl: "https://i.ibb.co/gM4JJh34/image.jpg",
+                stock: 2
+            },
+			{
+                id: 41,
+                name: "停下腳步前，造型腰頭百褶格紋短褲",
+                specs: "百褶格紋",
+                color: "咖格",
+                originalPrice: 1750,
+                salePrice: 1480,
+                imageUrl: "https://i.ibb.co/XkJV9Wbc/image.jpg",
+                stock: 1
+            },
+			{
+                id: 42,
+                name: "各自浪漫，造型腰頭牛仔直筒裙",
+                specs: "S",
+                color: "牛仔深藍",
+                originalPrice: 2980,
+                salePrice: 1390,
+                imageUrl: "https://i.ibb.co/mrwD9pSZ/image.jpg",
+                stock: 1
             }
         ];
 
-        // 獲取 DOM 元素
         const productList = document.getElementById('product-list');
-        const productModal = document.getElementById('product-modal');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const addToCartBtn = document.getElementById('add-to-cart-btn');
-        const cartBtn = document.getElementById('cart-btn');
-        const cartCount = document.getElementById('cart-count');
-        const cartModal = document.getElementById('cart-modal');
-        const closeCartBtn = document.getElementById('close-cart-btn');
-        const cartItems = document.getElementById('cart-items');
-        const cartItemCount = document.getElementById('cart-item-count');
-        const cartEmptyMessage = document.getElementById('cart-empty-message');
-        
-        // 購物車資料陣列
-        let cart = [];
 
-        // 渲染商品列表
         function renderProducts() {
             productList.innerHTML = '';
             products.forEach(product => {
                 const productCard = document.createElement('div');
-                productCard.className = 'product-card bg-white rounded-lg overflow-hidden shadow-sm';
-                productCard.dataset.productId = product.id; // 儲存產品 ID
+                
+                const stockText = product.stock > 0 ? `庫存：${product.stock}` : '已售完';
+                const stockColor = product.stock > 0 ? 'text-green-600' : 'text-red-600';
+                const cardOpacity = product.stock > 0 ? '' : 'opacity-50';
+
+                productCard.className = `product-card bg-white rounded-lg overflow-hidden shadow-sm ${cardOpacity}`;
                 
                 productCard.innerHTML = `
                     <div class="relative w-full aspect-w-3 aspect-h-4">
@@ -516,6 +231,9 @@
                             <p class="text-marjorie-gray text-sm line-through mr-2">NT$${product.originalPrice}</p>
                             <p class="text-marjorie-dark text-lg font-bold">NT$${product.salePrice}</p>
                         </div>
+                        <div class="mt-4 text-center font-bold ${stockColor}">
+                            ${stockText}
+                        </div>
                     </div>
                 `;
                 
@@ -523,101 +241,8 @@
             });
         }
         
-        // 顯示商品詳情燈箱
-        function showProductModal(product) {
-            document.getElementById('modal-image').src = product.imageUrl;
-            document.getElementById('modal-image').alt = product.name;
-            document.getElementById('modal-name').textContent = product.name;
-            document.getElementById('modal-specs').textContent = product.specs;
-            document.getElementById('modal-color').textContent = product.color;
-            document.getElementById('modal-original-price').textContent = `NT$${product.originalPrice}`;
-            document.getElementById('modal-sale-price').textContent = `NT$${product.salePrice}`;
-            addToCartBtn.dataset.productId = product.id;
-            productModal.classList.remove('hidden');
-        }
-
-        // 更新購物車數量顯示
-        function updateCartCount() {
-            cartCount.textContent = cart.length;
-            cartItemCount.textContent = cart.length;
-            if (cart.length > 0) {
-                cartEmptyMessage.classList.add('hidden');
-            } else {
-                cartEmptyMessage.classList.remove('hidden');
-            }
-        }
-
-        // 渲染購物車內容
-        function renderCartItems() {
-            cartItems.innerHTML = '';
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p class="text-center text-marjorie-gray">購物車是空的</p>';
-            } else {
-                cart.forEach(item => {
-                    const cartItem = document.createElement('div');
-                    cartItem.className = 'flex items-center space-x-4 p-2 border-b';
-                    cartItem.innerHTML = `
-                        <img src="${item.imageUrl}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md">
-                        <div class="flex-1">
-                            <h4 class="font-medium">${item.name}</h4>
-                            <p class="text-sm text-marjorie-gray">NT$${item.salePrice}</p>
-                        </div>
-                    `;
-                    cartItems.appendChild(cartItem);
-                });
-            }
-        }
-
-        // 事件監聽器
         document.addEventListener('DOMContentLoaded', () => {
             renderProducts();
-            updateCartCount();
-
-            // 監聽商品卡片點擊事件
-            productList.addEventListener('click', (e) => {
-                const productCard = e.target.closest('.product-card');
-                if (productCard) {
-                    const productId = parseInt(productCard.dataset.productId);
-                    const product = products.find(p => p.id === productId);
-                    if (product) {
-                        showProductModal(product);
-                    }
-                }
-            });
-
-            // 監聽關閉商品詳情燈箱
-            closeModalBtn.addEventListener('click', () => {
-                productModal.classList.add('hidden');
-            });
-
-            // 監聽加入購物車按鈕
-            addToCartBtn.addEventListener('click', (e) => {
-                const productId = parseInt(e.target.dataset.productId);
-                const product = products.find(p => p.id === productId);
-                
-                // 檢查是否已在購物車中 (庫存為1)
-                const isItemInCart = cart.some(item => item.id === productId);
-                
-                if (product && !isItemInCart) {
-                    cart.push(product);
-                    updateCartCount();
-                    productModal.classList.add('hidden');
-                    alert('商品已加入購物車！');
-                } else {
-                    alert('此商品已在購物車中，無法重複加入。');
-                }
-            });
-
-            // 監聽打開購物車燈箱
-            cartBtn.addEventListener('click', () => {
-                renderCartItems();
-                cartModal.classList.remove('hidden');
-            });
-            
-            // 監聽關閉購物車燈箱
-            closeCartBtn.addEventListener('click', () => {
-                cartModal.classList.add('hidden');
-            });
         });
     </script>
 </body>
