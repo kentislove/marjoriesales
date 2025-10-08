@@ -53,16 +53,45 @@
             color: var(--text-color);
         }
 
+        /* PC/大螢幕 預設樣式 */
         #filters {
             text-align: center;
             margin-bottom: 30px;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-wrap: wrap; /* PC上允許換行，完整呈現 */
+            justify-content: center; /* PC上居中對齊 */
             gap: 10px;
+            overflow-x: visible; /* PC上不隱藏溢出 */
+            padding-bottom: 0;
         }
+        
+        /* 行動端/小螢幕樣式 - 使用媒體查詢覆蓋 */
+        @media (max-width: 768px) {
+            #filters {
+                justify-content: flex-start; /* 行動端靠左對齊 */
+                flex-wrap: nowrap; /* 行動端不換行，實現橫向滾動 */
+                overflow-x: auto; /* 允許橫向滾動 */
+                -webkit-overflow-scrolling: touch; /* 提升 iOS 上的滾動體驗 */
+                padding: 5px 0 15px 0; /* 留出空間給滾動條或陰影 */
+                margin-left: -20px; /* 填滿整個螢幕寬度（抵銷 body 左右 padding）*/
+                margin-right: -20px;
+                padding-left: 20px; /* 讓第一個 tag 對齊內容 */
+                padding-right: 20px; /* 讓最後一個 tag 不會貼邊 */
+            }
+            
+            /* 隱藏滾動條 - 只在行動端樣式中保留，以保持介面簡潔 */
+            #filters::-webkit-scrollbar {
+                display: none;
+            }
 
+            #filters {
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
+            }
+        }
+        
         .filter-tag {
+            flex-shrink: 0; /* 防止標籤被壓縮 */
             background-color: #fff;
             color: var(--subtle-text-color);
             padding: 10px 20px;
