@@ -4,46 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>產品列表</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-font: 'Noto Serif TC', serif;
+            --secondary-font: 'Noto Sans TC', sans-serif;
+            --text-color: #333;
+            --subtle-text-color: #777;
+            --background-color: #f8f8f8;
+            --card-background: #fff;
+            --border-color: #e0e0e0;
+            --accent-color: #000;
+        }
+
         body {
-            font-family: '微軟正黑體', 'Arial', sans-serif;
+            font-family: var(--secondary-font);
             margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
+            padding: 30px 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
         }
 
         h1 {
+            font-family: var(--primary-font);
             text-align: center;
-            color: #333;
+            color: #1a1a1a;
+            font-size: 2.5rem;
             margin-bottom: 20px;
-        }
-        
-        #filters {
-            text-align: center;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .filter-tag {
-            background-color: #e0e0e0;
-            color: #555;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            font-size: 14px;
-        }
-        
-        .filter-tag:hover {
-            background-color: #ccc;
-        }
-        
-        .filter-tag.active {
-            background-color: #007bff;
-            color: white;
         }
 
         #search-container {
@@ -54,60 +44,134 @@
         #search-box {
             width: 100%;
             max-width: 400px;
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
             box-sizing: border-box;
+            background-color: var(--card-background);
+            color: var(--text-color);
+        }
+
+        #filters {
+            text-align: center;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .filter-tag {
+            background-color: #fff;
+            color: var(--subtle-text-color);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 14px;
+        }
+        
+        .filter-tag:hover {
+            background-color: var(--border-color);
+        }
+        
+        .filter-tag.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
         }
 
         #product-list {
             display: grid;
-            gap: 25px;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             max-width: 1200px;
             margin: auto;
         }
 
         .product-card {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background-color: var(--card-background);
+            border-radius: 5px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
+            transition: box-shadow 0.3s ease;
             cursor: pointer;
         }
 
         .product-card:hover {
-            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
 
         .product-images {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            padding: 10px;
-            background-color: #fafafa;
-            gap: 5px;
             position: relative;
             cursor: pointer;
         }
 
         .product-images img {
-            width: 0%; /* 圖片初始寬度為0 */
-            height: 200px;
+            width: 100%;
+            height: auto;
             object-fit: contain;
-            border-radius: 5px;
-            border: 1px solid #eee;
-            transition: width 0.5s ease; /* 添加過渡效果 */
+            transition: transform 0.5s ease;
+        }
+
+        .product-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
         }
         
-        /* 新增的類別，圖片載入完成後寬度設為100% */
-        .product-images img.loaded {
+        .product-info h2 {
+            font-family: var(--primary-font);
+            margin-top: 0;
+            color: #1a1a1a;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .product-info h2 a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .product-info h2 a:hover {
+            text-decoration: none;
+        }
+
+        .product-info p {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+
+        .product-info strong {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        
+        .product-info table {
             width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .product-info th, .product-info td {
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 0;
+            text-align: left;
+            word-break: break-all;
+            font-size: 14px;
+        }
+        
+        .product-info th {
+            font-family: var(--secondary-font);
+            font-weight: 500;
+            color: var(--subtle-text-color);
         }
 
         /* New styles for lightbox */
@@ -176,55 +240,6 @@
 
         .next-btn {
             right: 20px;
-        }
-
-        .product-info {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-        
-        .product-info h2 {
-            margin-top: 0;
-            color: #1a1a1a;
-            font-size: 1.5rem;
-        }
-        
-        .product-info h2 a {
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        .product-info h2 a:hover {
-            text-decoration: none;
-        }
-
-        .product-info p {
-            margin: 5px 0;
-            line-height: 1.6;
-        }
-
-        .product-info strong {
-            color: #555;
-        }
-        
-        .product-info table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        
-        .product-info th, .product-info td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            word-break: break-all;
-        }
-        
-        .product-info th {
-            background-color: #f2f2f2;
-            font-weight: bold;
         }
 
         @media (max-width: 768px) {
