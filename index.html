@@ -15,7 +15,50 @@
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+        
+        #filters {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .filter-tag {
+            background-color: #e0e0e0;
+            color: #555;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 14px;
+        }
+        
+        .filter-tag:hover {
+            background-color: #ccc;
+        }
+        
+        .filter-tag.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #search-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #search-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
         }
 
         #product-list {
@@ -141,7 +184,7 @@
             flex-direction: column;
             flex-grow: 1;
         }
-
+        
         .product-info h2 {
             margin-top: 0;
             color: #1a1a1a;
@@ -194,6 +237,10 @@
 <body>
 
     <h1>產品列表</h1>
+    <div id="search-container">
+        <input type="text" id="search-box" placeholder="輸入產品名稱搜尋...">
+    </div>
+    <div id="filters"></div>
     <div id="product-list">載入中...</div>
     
     <div class="lightbox-overlay" id="lightbox">
@@ -214,8 +261,13 @@
         const closeBtn = document.querySelector('.close-btn');
         const prevBtn = document.querySelector('.prev-btn');
         const nextBtn = document.querySelector('.next-btn');
+        const productListDiv = document.getElementById('product-list');
+        const filtersDiv = document.getElementById('filters');
+        const searchBox = document.getElementById('search-box');
         let currentImageIndex = 0;
         let lightboxImages = [];
+        let allProductsData = {};
+        let activeCategory = 'all';
 
         function openLightbox(images, startIndex = 0) {
             lightboxImages = images;
@@ -255,6 +307,130 @@
             showImage(currentImageIndex);
         });
 
+        function renderProducts(productsToRender) {
+            productListDiv.innerHTML = '';
+            if (Object.keys(productsToRender).length === 0) {
+                productListDiv.innerHTML = '<p style="text-align: center; width: 100%;">沒有找到相關產品。</p>';
+                return;
+            }
+
+            for (const productName in productsToRender) {
+                const productData = productsToRender[productName];
+                const card = document.createElement('div');
+                card.className = 'product-card';
+
+                const photos = productData.productInfo['照片連結'] ? productData.productInfo['照片連結'].split(',').map(url => url.trim()) : [];
+                let imagesHtml = '';
+                if (photos.length > 0) {
+                    imagesHtml = `<div class="product-images">
+                        <img src="${photos[0]}" alt="${productName}" data-photos='${JSON.stringify(photos)}'>
+                    </div>`;
+                }
+
+                let detailsHtml = '<table><thead><tr><th>尺寸</th><th>顏色</th><th>數量</th></tr></thead><tbody>';
+                for (const key in productData.details) {
+                    const detail = productData.details[key];
+                    detailsHtml += `<tr><td>${detail['尺寸']}</td><td>${detail['顏色']}</td><td>${detail['數量']}</td></tr>`;
+                }
+                detailsHtml += '</tbody></table>';
+
+                const cardContentHtml = `
+                    ${imagesHtml}
+                    <div class="product-info">
+                        <h2>${productName}</h2>
+                        <p><strong>分類:</strong> ${productData.productInfo['分類'] || '無'}</p>
+                        <p><strong>售價:</strong> ${productData.productInfo['售價'] || '無'}</p>
+                        <p><strong>產品內容:</strong> ${productData.productInfo['產品內容說明'] || '無'}</p>
+                        <h3>庫存明細</h3>
+                        ${detailsHtml}
+                    </div>
+                `;
+
+                card.innerHTML = cardContentHtml;
+                
+                // 圖片載入完成後再調整寬度
+                const cardImage = card.querySelector('.product-images img');
+                if (cardImage) {
+                    cardImage.addEventListener('load', () => {
+                        cardImage.classList.add('loaded');
+                    });
+                }
+
+                const productLink = productData.productInfo['連結'];
+                if (productLink && productLink.trim() !== '') {
+                    const fullLink = productLink.startsWith('http://') || productLink.startsWith('https://') ? productLink : `https://${productLink}`;
+                    card.addEventListener('click', (event) => {
+                        if (event.target.closest('.product-images')) {
+                            return;
+                        }
+                        window.open(fullLink, '_blank');
+                    });
+                }
+
+                productListDiv.appendChild(card);
+            }
+
+            document.querySelectorAll('.product-images').forEach(imagesDiv => {
+                const img = imagesDiv.querySelector('img');
+                if (img) {
+                    const photos = JSON.parse(img.getAttribute('data-photos'));
+                    if (photos.length > 1) {
+                        imagesDiv.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            openLightbox(photos);
+                        });
+                    }
+                }
+            });
+        }
+        
+        function filterProducts() {
+            const searchText = searchBox.value.toLowerCase();
+            const filteredProducts = {};
+            
+            for (const productName in allProductsData) {
+                const productData = allProductsData[productName];
+                const productCategory = productData.productInfo['分類'] || '無';
+                
+                const matchesCategory = activeCategory === 'all' || productCategory.toLowerCase() === activeCategory;
+                const matchesSearch = productName.toLowerCase().includes(searchText);
+
+                if (matchesCategory && matchesSearch) {
+                    filteredProducts[productName] = productData;
+                }
+            }
+            
+            renderProducts(filteredProducts);
+        }
+
+        function createFilterTags(categories) {
+            filtersDiv.innerHTML = '';
+            const allTag = document.createElement('div');
+            allTag.className = 'filter-tag active';
+            allTag.textContent = '所有產品';
+            allTag.dataset.category = 'all';
+            filtersDiv.appendChild(allTag);
+
+            categories.forEach(category => {
+                const tag = document.createElement('div');
+                tag.className = 'filter-tag';
+                tag.textContent = category;
+                tag.dataset.category = category.toLowerCase();
+                filtersDiv.appendChild(tag);
+            });
+            
+            filtersDiv.addEventListener('click', (event) => {
+                if (event.target.classList.contains('filter-tag')) {
+                    document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
+                    event.target.classList.add('active');
+                    activeCategory = event.target.dataset.category;
+                    filterProducts();
+                }
+            });
+        }
+        
+        searchBox.addEventListener('input', filterProducts);
+
         fetch(apiUrl)
             .then(response => {
                 if (!response.ok) {
@@ -263,19 +439,19 @@
                 return response.json();
             })
             .then(data => {
-                const productListDiv = document.getElementById('product-list');
                 productListDiv.innerHTML = '';
 
                 if (data.length === 0) {
                     productListDiv.innerHTML = '<p>目前沒有產品資料。</p>';
                     return;
                 }
-
+                
                 const groupedProducts = data.reduce((acc, currentItem) => {
                     const productName = currentItem['產品名稱'] || '無標題';
                     const size = currentItem['尺寸'] || '無';
                     const color = currentItem['顏色'] || '無';
                     const quantity = parseInt(currentItem['數量']) || 0;
+                    const category = currentItem['分類'] || '無分類';
                     const detailsKey = `${size}-${color}`;
 
                     if (!acc[productName]) {
@@ -285,7 +461,8 @@
                                 '售價': currentItem['我方售價'],
                                 '產品內容說明': currentItem['產品內容說明'],
                                 '連結': null,
-                                '照片連結': currentItem['照片連結']
+                                '照片連結': currentItem['照片連結'],
+                                '分類': category
                             }
                         };
                     }
@@ -310,74 +487,13 @@
 
                     return acc;
                 }, {});
-
-                for (const productName in groupedProducts) {
-                    const productData = groupedProducts[productName];
-                    const card = document.createElement('div');
-                    card.className = 'product-card';
-
-                    const photos = productData.productInfo['照片連結'] ? productData.productInfo['照片連結'].split(',').map(url => url.trim()) : [];
-                    let imagesHtml = '';
-                    if (photos.length > 0) {
-                        imagesHtml = `<div class="product-images">
-                            <img src="${photos[0]}" alt="${productName}" data-photos='${JSON.stringify(photos)}'>
-                        </div>`;
-                    }
-
-                    let detailsHtml = '<table><thead><tr><th>尺寸</th><th>顏色</th><th>數量</th></tr></thead><tbody>';
-                    for (const key in productData.details) {
-                        const detail = productData.details[key];
-                        detailsHtml += `<tr><td>${detail['尺寸']}</td><td>${detail['顏色']}</td><td>${detail['數量']}</td></tr>`;
-                    }
-                    detailsHtml += '</tbody></table>';
-
-                    const cardContentHtml = `
-                        ${imagesHtml}
-                        <div class="product-info">
-                            <h2>${productName}</h2>
-                            <p><strong>售價:</strong> ${productData.productInfo['售價'] || '無'}</p>
-                            <p><strong>產品內容:</strong> ${productData.productInfo['產品內容說明'] || '無'}</p>
-                            <h3>庫存明細</h3>
-                            ${detailsHtml}
-                        </div>
-                    `;
-
-                    card.innerHTML = cardContentHtml;
-                    
-                    // 圖片載入完成後再調整寬度
-                    const cardImage = card.querySelector('.product-images img');
-                    if (cardImage) {
-                        cardImage.addEventListener('load', () => {
-                            cardImage.classList.add('loaded');
-                        });
-                    }
-
-                    const productLink = productData.productInfo['連結'];
-                    if (productLink && productLink.trim() !== '') {
-                        const fullLink = productLink.startsWith('http://') || productLink.startsWith('https://') ? productLink : `https://${productLink}`;
-                        card.addEventListener('click', (event) => {
-                            if (event.target.closest('.product-images')) {
-                                return;
-                            }
-                            window.open(fullLink, '_blank');
-                        });
-                    }
-
-                    productListDiv.appendChild(card);
-                }
-
-                document.querySelectorAll('.product-images').forEach(imagesDiv => {
-                    const img = imagesDiv.querySelector('img');
-                    if (img) {
-                        const photos = JSON.parse(img.getAttribute('data-photos'));
-                        if (photos.length > 1) {
-                            imagesDiv.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                openLightbox(photos);
-                            });
-                        }
-                    }
-                });
+                
+                allProductsData = groupedProducts;
+                
+                const categories = [...new Set(data.map(item => item['分類']).filter(Boolean))].sort();
+                createFilterTags(categories);
+                
+                filterProducts();
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
