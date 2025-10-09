@@ -48,7 +48,7 @@
             width: 100%;
         }
         
-        /* 【新增樣式】促銷口號容器 */
+        /* 【修正點 1】促銷口號 PC 預設樣式 (包含動畫) */
         #slogan-container {
             max-width: 1200px;
             margin: 10px auto 30px;
@@ -58,7 +58,8 @@
             padding: 15px 20px;
             border-radius: 5px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            animation: pulse 1.5s infinite alternate;
+            /* PC 端保留動畫效果 */
+            animation: pulse 1.5s infinite alternate; 
         }
 
         #slogan-container p {
@@ -86,8 +87,6 @@
             padding: 10px;
             transition: color 0.3s;
         }
-        
-        /* ... (其餘 CSS 樣式保持不變，因為在您上一次提供的程式碼中，它們是完整的) ... */
 
         #cart-icon:hover {
             color: var(--accent-color);
@@ -142,6 +141,22 @@
         }
         
         @media (max-width: 768px) {
+            /* 【修正點 2】行動端優化：移除動畫，縮小字體和間距 */
+            #slogan-container {
+                margin: 10px -20px 20px; /* 擴展到全寬，抵銷 body padding */
+                border-radius: 0; /* 移除圓角 */
+                padding: 10px 15px; /* 縮小內邊距 */
+                animation: none; /* 移除動畫，節省行動設備資源 */
+            }
+
+            #slogan-container p {
+                font-size: 0.95rem; /* 縮小文字 */
+            }
+
+            #slogan-container strong {
+                font-size: 1.2rem; /* 縮小重點文字 */
+            }
+            /* 原有的行動端樣式 */
             #filters {
                 justify-content: flex-start;
                 flex-wrap: nowrap;
