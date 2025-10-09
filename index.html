@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ Marjorie年終清倉：限時免運，售完不補！搶購最後現貨</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,19 +21,20 @@
             --success-color: #4CAF50;
             --error-color: #f44336;
             --promo-color: #E84A5F; /* 促銷亮色 */
+            --page-padding-x: 20px; /* 定義 PC 預設的左右 padding */
         }
 
         body {
             font-family: var(--secondary-font);
             margin: 0;
             /* PC 預設內邊距 */
-            padding: 30px 20px; 
+            padding: 30px var(--page-padding-x); 
             background-color: var(--background-color);
             color: var(--text-color);
             line-height: 1.6;
         }
 
-        /* 頁面標題與購物車圖示容器 */
+        /* 頁面標題與購物車圖示容器 (不變) */
         #header-container {
             display: flex;
             justify-content: space-between;
@@ -105,7 +108,7 @@
             line-height: 1;
         }
 
-        /* 主內容容器 */
+        /* 主內容容器 (不變) */
         #main-content {
             max-width: 1200px;
             margin: 0 auto;
@@ -140,31 +143,44 @@
             padding-bottom: 0;
         }
         
-        /* ============== RWD 媒體查詢修正區域 ============== */
+        /* ============== RWD 媒體查詢修正區域 (關鍵修復) ============== */
         @media (max-width: 768px) {
-            /* 修正 Body Padding，讓內容貼邊，便於負邊距擴展 */
+            /* 【RWD 修正 1】將 body 的左右 padding 設為 0，只保留垂直 padding */
             body {
-                padding: 15px 15px; 
+                padding: 15px 0; 
             }
             
-            /* 修正 H1/Header 結構 */
+            /* 將 #main-content/h1/header-container 內容集中包在一個有 padding 的區塊內 */
+            #header-container, #main-content > div:not(#product-list), #search-container {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            /* 修正 Header 結構 */
             #header-container {
-                flex-direction: column;
+                flex-direction: row; /* 保持水平排列，但讓 h1 優先佔位 */
                 align-items: center;
                 margin-bottom: 10px;
             }
             h1 {
                 font-size: 2rem;
-                margin-bottom: 10px;
-                width: auto; /* 恢復自動寬度 */
+                margin-bottom: 0;
+                text-align: left; /* 讓標題靠左 */
+                flex-grow: 1;
+                padding-right: 10px; /* 避免 h1 貼到購物車圖示 */
+            }
+            #cart-icon {
+                flex-shrink: 0;
             }
 
-            /* 【優化 1】促銷文案 RWD */
+            /* 【RWD 修正 2】促銷文案，讓其徹底佔滿螢幕寬度 */
             #slogan-container {
-                /* 利用負邊距抵銷新的 body padding 15px */
-                margin: 10px -15px 20px; 
+                /* 移除 margin: auto 的影響，讓其佔據全部寬度 */
+                max-width: 100%;
+                width: 100%; 
+                margin: 10px 0 20px 0; /* 移除左右 margin，頂到底 */
                 border-radius: 0; 
-                padding: 12px 15px; 
+                padding: 12px 15px; /* 內邊距依然存在 */
                 animation: none; 
             }
 
@@ -178,22 +194,25 @@
                 margin: 3px 0;
             }
             
-            /* 【修復 2】篩選器 RWD */
+            /* 【RWD 修正 3】篩選器 RWD - 橫向滾動 */
             #filters {
                 justify-content: flex-start;
                 flex-wrap: nowrap;
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
                 padding: 5px 0 15px 0; 
-                /* 負邊距抵銷 body padding 15px */
-                margin-left: -15px; 
-                margin-right: -15px;
-                padding-left: 15px; /* 讓第一個 tag 對齊內容 */
-                padding-right: 15px; /* 讓最後一個 tag 不會貼邊 */
+                /* 使用負邊距，將其拉伸到與 viewport 齊平 */
+                margin-left: 0; 
+                margin-right: 0;
+                /* 重新添加左右 padding 到 #filters 內部，確保內容不貼邊 */
+                padding-left: 15px; 
+                padding-right: 15px; 
+                width: 100vw; /* 確保佔滿整個視窗寬度 */
+                transform: translateX(calc(-50vw + 50%)); /* 讓其居中並滿寬 */
                 margin-bottom: 20px;
             }
             
-            /* 篩選器隱藏滾動條 */
+            /* 隱藏滾動條 */
             #filters::-webkit-scrollbar {
                 display: none;
             }
@@ -204,11 +223,8 @@
             
             #product-list {
                 grid-template-columns: 1fr;
-            }
-            
-            /* 確保卡片內的輸入框在小螢幕上正常顯示 */
-            .quantity-control input {
-                 max-width: 100%;
+                padding-left: 15px; /* 產品列表也需要左右 padding */
+                padding-right: 15px;
             }
         }
         /* ============================================== */
@@ -596,15 +612,6 @@
 
         .back-to-cart-btn:hover {
             background-color: #555;
-        }
-
-        @media (max-width: 768px) {
-            .modal-content {
-                padding: 20px;
-            }
-            #checkout-page {
-                padding: 20px 10px;
-            }
         }
     </style>
 </head>
