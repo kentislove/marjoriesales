@@ -745,8 +745,8 @@
             });
             
             return {
-                sizes: sortedSizes,
-                colors: sortedColors,
+                sizes: sortedSizes, // Array
+                colors: sortedColors, // Array
                 detailsMap: specs.detailsMap
             };
         }
@@ -765,13 +765,15 @@
                 const specs = getAvailableSpecs(productName);
                 const firstPrice = productData.productInfo['售價'] || 'NT$ 價格待定';
                 
+                // 修正：將 .has() 替換為 .includes()，因為 specs.sizes/colors 已經是 Array
                 // 判斷是否為多規格：尺寸或顏色集合中任一個數量大於 1，或僅有 '無' 以外的單一規格
-                const hasMultipleSpecs = (specs.sizes.length > 1 && !(specs.sizes.length === 2 && specs.sizes.has('無'))) || 
-                                         (specs.colors.length > 1 && !(specs.colors.length === 2 && specs.colors.has('無')));
+                const hasMultipleSpecs = (specs.sizes.length > 1 && !(specs.sizes.length === 2 && specs.sizes.includes('無'))) || 
+                                         (specs.colors.length > 1 && !(specs.colors.length === 2 && specs.colors.includes('無')));
                 
                 // 如果是單一規格，需要確定規格名稱
-                const singleSize = specs.sizes.values().next().value || '無';
-                const singleColor = specs.colors.values().next().value || '無';
+                // 因為 specs.sizes 已經是 Array，使用 specs.sizes[0] 即可取得第一個元素
+                const singleSize = specs.sizes[0] || '無';
+                const singleColor = specs.colors[0] || '無';
                 
                 const card = document.createElement('div');
                 card.className = 'product-card';
