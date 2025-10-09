@@ -367,6 +367,7 @@
             padding: 5px;
             border: 1px solid var(--border-color);
             border-radius: 3px;
+            box-sizing: border-box; /* 新增此行確保邊框不影響寬度 */
         }
         
         .remove-btn {
@@ -436,7 +437,71 @@
         #checkout-page strong {
             color: var(--error-color);
         }
+
+        .line-contact-box {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .line-contact-box img {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
         
+        .line-contact-box p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .shipping-alert {
+            display: block;
+            padding: 10px;
+            margin-top: 15px;
+            background-color: #fff3cd; /* 警示黃色背景 */
+            color: #856404; /* 深黃色文字 */
+            border: 1px solid #ffeeba;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        .bank-info-box {
+            background-color: #f0f8ff; /* 淺藍色背景 */
+            border: 1px solid #c2e0ff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            margin-top: 10px;
+        }
+
+        .bank-info-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 5px 0 0 0;
+        }
+        
+        .bank-info-box li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .bank-info-box code {
+            background-color: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
         .back-to-cart-btn {
             display: block;
             width: 200px;
@@ -487,15 +552,41 @@
             <h2>🎉 訂單確認與付款說明</h2>
             <p style="text-align: center; font-size: 1.1rem; margin-bottom: 40px;">請依照以下步驟完成您的訂單，我們會在收到款項後盡快為您出貨。</p>
             <ol>
-                <li><strong>確認購物車明細:</strong> 請再次檢查您在購物車中所選的產品、規格與數量是否正確。</li>
-                <li><strong>填寫收件資訊:</strong> 請您透過 **LINE**、**E-mail** 或您常用的社群軟體 **私訊** 給我們，提供您的**訂單明細截圖**、**收件人姓名**、**聯絡電話**、**完整收件地址**。</li>
-                <li><strong>進行匯款:</strong> 請將總金額匯款至指定帳戶：
-                    <ul>
-                        <li>**銀行名稱:** [您的銀行名稱]</li>
-                        <li>**帳號:** [您的銀行帳號，例如：1234-5678-901234]</li>
-                        <li>**戶名:** [您的戶名]</li>
-                    </ul>
-                    <p style="margin-top: 10px; font-size: 0.9em; color: var(--error-color);">**請注意:** 匯款完成後，請務必提供**帳號後五碼**或**匯款證明截圖**給我們以供核對。</p>
+                <li>
+                    <strong>聯繫客服提供收件資訊:</strong> 
+                    <div class="line-contact-box">
+                        <img src="https://qr-official.line.me/gs/M_318latbk_GW.png?oat_content=qr" alt="LINE QR Code">
+                        <p>請掃描 QR Code **或** 加入 LINE ID: **@318latbk** 留言。</p>
+                        
+                        <span class="shipping-alert">
+                            🚚 **重要提醒：選擇超商店到店**
+                            <br>
+                            超商取貨付款服務須等**小編提供連結後點擊下單**才支援取貨付款喔！
+                        </span>
+                        
+                        <p style="margin-top: 20px;">請務必提供以下完整資訊：</p>
+                        <ul style="list-style-type: none; padding: 0; text-align: left; max-width: 300px; margin: 10px auto;">
+                            <li>✅ **訂單明細截圖**</li>
+                            <li>✅ **收件人姓名**</li>
+                            <li>✅ **聯絡電話**</li>
+                            <li>✅ **完整收件地址** (若選擇宅配)</li>
+                            <li>✅ **7-11店到店的店號** (若選擇 7-11)</li>
+                            <li>✅ **全家賣貨便的店號** (若選擇全家)</li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <strong>進行匯款:</strong> 
+                    <div class="bank-info-box">
+                        <p>請將總金額匯款至以下指定帳戶：</p>
+                        <ul>
+                            <li>**銀行名稱:** **王道銀行** (銀行代碼: <code>048</code>)</li>
+                            <li>**銀行帳號:** <code>01000191591188</code></li>
+                            
+                        </ul>
+                    </div>
+                    
+                    <p style="margin-top: 10px; font-size: 0.9em; color: var(--error-color);">**重要提醒:** 匯款完成後，請務必透過 LINE 提供**帳號後五碼**或**匯款證明截圖**給我們以供核對。</p>
                 </li>
                 <li><strong>等待確認:</strong> 我們會在收到您的資料與款項後，發出訂單確認通知，並儘速安排出貨。</li>
             </ol>
@@ -709,6 +800,16 @@
                 closeCartModal();
             }
         });
+        
+        // 【新增工具函式】: 清理產品名稱以生成安全的 ID
+        function getSafeId(productName) {
+            // 替換所有非字母數字、非中文、非減號、非底線的字符為連字符 '-'
+            // 這包括了空格、逗號、點號、特殊符號等
+            return productName
+                .replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '-')
+                .replace(/--+/g, '-') // 將多個連字符替換為單個
+                .toLowerCase();
+        }
 
         // --- 產品渲染與篩選邏輯 (修改處理邏輯) ---
         
@@ -724,8 +825,8 @@
             for (const key in details) {
                 const detail = details[key];
                 // 確保尺寸和顏色不是 null 或 undefined
-                const size = detail['尺寸'] || '無';
-                const color = detail['顏色'] || '無';
+                const size = String(detail['尺寸'] || '無');
+                const color = String(detail['顏色'] || '無');
                 
                 specs.sizes.add(size);
                 specs.colors.add(color);
@@ -734,14 +835,22 @@
             
             // 確保 '無' 規格永遠在列表最前面
             const sortedSizes = [...specs.sizes].sort((a, b) => {
-                if (a === '無') return -1;
-                if (b === '無') return 1;
-                return a.localeCompare(b);
+                // 【關鍵修正】強制轉換為字串，避免非字串類型調用 localeCompare
+                const strA = String(a);
+                const strB = String(b);
+                
+                if (strA === '無') return -1;
+                if (strB === '無') return 1;
+                return strA.localeCompare(strB);
             });
             const sortedColors = [...specs.colors].sort((a, b) => {
-                if (a === '無') return -1;
-                if (b === '無') return 1;
-                return a.localeCompare(b);
+                // 【關鍵修正】強制轉換為字串，避免非字串類型調用 localeCompare
+                const strA = String(a);
+                const strB = String(b);
+                
+                if (strA === '無') return -1;
+                if (strB === '無') return 1;
+                return strA.localeCompare(strB);
             });
             
             return {
@@ -762,16 +871,15 @@
 
             for (const productName in productsToRender) {
                 const productData = productsToRender[productName];
+                const safeProductId = getSafeId(productName); // 【關鍵修正】取得安全 ID
                 const specs = getAvailableSpecs(productName);
                 const firstPrice = productData.productInfo['售價'] || 'NT$ 價格待定';
                 
-                // 修正：將 .has() 替換為 .includes()，因為 specs.sizes/colors 已經是 Array
                 // 判斷是否為多規格：尺寸或顏色集合中任一個數量大於 1，或僅有 '無' 以外的單一規格
                 const hasMultipleSpecs = (specs.sizes.length > 1 && !(specs.sizes.length === 2 && specs.sizes.includes('無'))) || 
                                          (specs.colors.length > 1 && !(specs.colors.length === 2 && specs.colors.includes('無')));
                 
                 // 如果是單一規格，需要確定規格名稱
-                // 因為 specs.sizes 已經是 Array，使用 specs.sizes[0] 即可取得第一個元素
                 const singleSize = specs.sizes[0] || '無';
                 const singleColor = specs.colors[0] || '無';
                 
@@ -793,20 +901,20 @@
                 if (hasMultipleSpecs) {
                     specSelectorHtml = `
                         <div class="spec-selector">
-                            <label for="size-${productName}">尺寸:</label>
-                            <select id="size-${productName}" data-spec-type="size">
+                            <label for="size-${safeProductId}">尺寸:</label>
+                            <select id="size-${safeProductId}" data-spec-type="size">
                                 ${specs.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
                             </select>
                             
-                            <label for="color-${productName}">顏色:</label>
-                            <select id="color-${productName}" data-spec-type="color">
+                            <label for="color-${safeProductId}">顏色:</label>
+                            <select id="color-${safeProductId}" data-spec-type="color">
                                 ${specs.colors.map(c => `<option value="${c}">${c}</option>`).join('')}
                             </select>
                             
-                            <div class="stock-info" id="stock-info-${productName}">請選擇規格</div>
+                            <div class="stock-info" id="stock-info-${safeProductId}">請選擇規格</div>
                             
-                            <label for="qty-${productName}">數量:</label>
-                            <input type="number" id="qty-${productName}" value="1" min="1" max="1" disabled>
+                            <label for="qty-${safeProductId}">數量:</label>
+                            <input type="number" id="qty-${safeProductId}" value="1" min="1" max="1" disabled>
                             
                             <button class="add-to-cart-btn" data-product-name="${productName}" data-price="${firstPrice}" disabled>加入購物車</button>
                         </div>
@@ -818,9 +926,9 @@
                     specSelectorHtml = `
                         <div class="spec-selector">
                             ${(singleSize !== '無' || singleColor !== '無') ? `<p>規格: ${singleSize}/${singleColor}</p>` : ''}
-                            <p class="stock-info" id="stock-info-${productName}">${stockText}</p>
-                            <label for="qty-${productName}">數量:</label>
-                            <input type="number" id="qty-${productName}" value="1" min="1" max="${stock}" ${stock === 0 ? 'disabled' : ''}>
+                            <p class="stock-info" id="stock-info-${safeProductId}">${stockText}</p>
+                            <label for="qty-${safeProductId}">數量:</label>
+                            <input type="number" id="qty-${safeProductId}" value="1" min="1" max="${stock}" ${stock === 0 ? 'disabled' : ''}>
                             <button class="add-to-cart-btn" data-product-name="${productName}" data-price="${firstPrice}" data-size="${singleSize}" data-color="${singleColor}" ${stock === 0 ? 'disabled' : ''}>加入購物車</button>
                         </div>
                     `;
@@ -842,14 +950,22 @@
                 productListDiv.appendChild(card);
                 
                 // --- 規格選擇連動邏輯 ---
+                
                 if (hasMultipleSpecs) {
-                    const sizeSelect = card.querySelector(`#size-${productName}`);
-                    const colorSelect = card.querySelector(`#color-${productName}`);
-                    const qtyInput = card.querySelector(`#qty-${productName}`);
-                    const stockInfoDiv = card.querySelector(`#stock-info-${productName}`);
+                    // 【關鍵修正】使用 safeProductId 確保 querySelector 成功
+                    const sizeSelect = card.querySelector(`#size-${safeProductId}`);
+                    const colorSelect = card.querySelector(`#color-${safeProductId}`);
+                    const qtyInput = card.querySelector(`#qty-${safeProductId}`);
+                    const stockInfoDiv = card.querySelector(`#stock-info-${safeProductId}`);
                     const addToCartBtn = card.querySelector('.add-to-cart-btn');
 
                     const updateStock = () => {
+                        // 修正：這裡的檢查確保即使 ID 生成有問題，我們也不會對 null 操作
+                        if (!sizeSelect || !colorSelect || !qtyInput || !stockInfoDiv || !addToCartBtn) {
+                             // console.error(`規格選擇器元素缺失 (Multi-Spec): ${productName}`); 
+                             return; 
+                        }
+                        
                         const selectedSize = sizeSelect.value;
                         const selectedColor = colorSelect.value;
                         const stockKey = `${selectedSize}-${selectedColor}`;
@@ -868,10 +984,11 @@
                         addToCartBtn.dataset.size = selectedSize;
                         addToCartBtn.dataset.color = selectedColor;
                     };
-
-                    sizeSelect.addEventListener('change', updateStock);
-                    colorSelect.addEventListener('change', updateStock);
-                    qtyInput.addEventListener('input', () => {
+                    
+                    if (sizeSelect) sizeSelect.addEventListener('change', updateStock);
+                    if (colorSelect) colorSelect.addEventListener('change', updateStock);
+                    
+                    if (qtyInput) qtyInput.addEventListener('input', () => {
                         // 確保輸入數量不超過庫存且至少為 1
                         const max = parseInt(qtyInput.max);
                         if (parseInt(qtyInput.value) > max) {
@@ -882,35 +999,65 @@
                         }
                     });
 
-                    // 初始載入時更新庫存資訊
+                    // 初始載入時更新庫存資訊 
                     updateStock();
+                    
+                    // 多規格產品的按鈕事件綁定
+                    if (addToCartBtn) {
+                        addToCartBtn.addEventListener('click', (e) => {
+                            const btn = e.currentTarget;
+                            const name = btn.dataset.productName;
+                            const price = btn.dataset.price;
+                            let size = btn.dataset.size;
+                            let color = btn.dataset.color;
+                            let quantity = parseInt(card.querySelector(`#qty-${safeProductId}`)?.value || 0); // 使用 safeProductId
+                            
+                            if (quantity > 0) {
+                                addToCart(name, size, color, quantity, price);
+                            } else {
+                                alert('請選擇有效的數量！');
+                            }
+                        });
+                    }
                 }
                 
-                // --- 加入購物車按鈕事件 ---
-                card.querySelector('.add-to-cart-btn').addEventListener('click', (e) => {
-                    const btn = e.currentTarget;
-                    const name = btn.dataset.productName;
-                    const price = btn.dataset.price;
-                    let size = btn.dataset.size;
-                    let color = btn.dataset.color;
-                    let quantity;
+                // --- 單規格產品的按鈕事件綁定 (確保按鈕存在) ---
+                const singleAddToCartBtn = card.querySelector('.add-to-cart-btn');
+                // 【關鍵修正】使用 safeProductId 確保 querySelector 成功
+                const singleQtyInput = card.querySelector(`#qty-${safeProductId}`); 
+                
+                if (!hasMultipleSpecs && singleAddToCartBtn) {
+                    singleAddToCartBtn.addEventListener('click', (e) => {
+                        const btn = e.currentTarget;
+                        const name = btn.dataset.productName;
+                        const price = btn.dataset.price;
+                        let size = btn.dataset.size;
+                        let color = btn.dataset.color;
+                        // 安全取值
+                        let quantity = parseInt(singleQtyInput?.value || 0); 
+                        
+                        if (quantity > 0) {
+                            addToCart(name, size, color, quantity, price);
+                        } else {
+                            alert('請選擇有效的數量！');
+                        }
+                    });
                     
-                    if (hasMultipleSpecs) {
-                        quantity = parseInt(card.querySelector(`#qty-${name}`).value);
-                    } else {
-                        quantity = parseInt(card.querySelector(`#qty-${name}`).value);
-                        size = singleSize; // 再次確保單一規格的取值
-                        color = singleColor;
+                    // 單規格的數量輸入框限制
+                    if (singleQtyInput) {
+                        singleQtyInput.addEventListener('input', () => {
+                            const max = parseInt(singleQtyInput.max);
+                            if (parseInt(singleQtyInput.value) > max) {
+                                singleQtyInput.value = max;
+                            }
+                            if (parseInt(singleQtyInput.value) < 1 || isNaN(parseInt(singleQtyInput.value))) {
+                                singleQtyInput.value = 1;
+                            }
+                        });
                     }
+                }
 
-                    if (quantity > 0) {
-                        addToCart(name, size, color, quantity, price);
-                    } else {
-                        alert('請選擇有效的數量！');
-                    }
-                });
-
-                // --- Lightbox 事件 (不變) ---
+                // --- Lightbox 事件 (確保 img 存在) ---
                 const imagesDiv = card.querySelector('.product-images');
                 if (imagesDiv) {
                     const img = imagesDiv.querySelector('img');
@@ -924,11 +1071,12 @@
                     }
                 }
                 
-                // --- 外部連結點擊事件 (不變) ---
+                // --- 外部連結點擊事件 (修正：只在有連結時綁定) ---
                 const productLink = productData.productInfo['連結'];
-                if (productLink && productLink.trim() !== '') {
+                if (productLink && productLink.trim() !== '' && card) {
                     const fullLink = productLink.startsWith('http://') || productLink.startsWith('https://') ? productLink : `https://${productLink}`;
-                    card.addEventListener('click', (event) => {
+                    
+                    card.addEventListener('click', (event) => { 
                         // 只有點擊卡片其他部分才開啟連結
                         if (!event.target.closest('.spec-selector') && !event.target.closest('.product-images')) {
                              window.open(fullLink, '_blank');
@@ -1050,8 +1198,9 @@
                 const groupedProducts = data.reduce((acc, currentItem) => {
                     // 確保所有關鍵欄位都有預設值，防止取值錯誤
                     const productName = currentItem['產品名稱'] || '無標題';
-                    const size = currentItem['尺寸'] || '無';
-                    const color = currentItem['顏色'] || '無';
+                    // 修正：在資料處理的早期階段，就將尺寸和顏色確保為字串類型，提升健壯性
+                    const size = String(currentItem['尺寸'] || '無');
+                    const color = String(currentItem['顏色'] || '無');
                     const quantity = parseInt(currentItem['數量']) || 0;
                     const category = currentItem['分類'] || '無分類';
                     const price = currentItem['我方售價'] || 'NT$ 價格待定';
