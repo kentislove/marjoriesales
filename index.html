@@ -24,13 +24,14 @@
         body {
             font-family: var(--secondary-font);
             margin: 0;
-            padding: 30px 20px;
+            /* PC 預設內邊距 */
+            padding: 30px 20px; 
             background-color: var(--background-color);
             color: var(--text-color);
             line-height: 1.6;
         }
 
-        /* 頁面標題與購物車圖示容器 (不變) */
+        /* 頁面標題與購物車圖示容器 */
         #header-container {
             display: flex;
             justify-content: space-between;
@@ -48,7 +49,7 @@
             width: 100%;
         }
         
-        /* 【修正點 1】促銷口號 PC 預設樣式 (包含動畫) */
+        /* 促銷口號 PC 預設樣式 (包含動畫) */
         #slogan-container {
             max-width: 1200px;
             margin: 10px auto 30px;
@@ -58,7 +59,6 @@
             padding: 15px 20px;
             border-radius: 5px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            /* PC 端保留動畫效果 */
             animation: pulse 1.5s infinite alternate; 
         }
 
@@ -111,7 +111,7 @@
             margin: 0 auto;
         }
 
-        /* 產品列表與篩選樣式 (不變) */
+        /* 產品列表與篩選樣式 (PC 預設) */
         #search-container {
             text-align: center;
             margin-bottom: 20px;
@@ -140,34 +140,60 @@
             padding-bottom: 0;
         }
         
+        /* ============== RWD 媒體查詢修正區域 ============== */
         @media (max-width: 768px) {
-            /* 【修正點 2】行動端優化：移除動畫，縮小字體和間距 */
+            /* 修正 Body Padding，讓內容貼邊，便於負邊距擴展 */
+            body {
+                padding: 15px 15px; 
+            }
+            
+            /* 修正 H1/Header 結構 */
+            #header-container {
+                flex-direction: column;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 10px;
+                width: auto; /* 恢復自動寬度 */
+            }
+
+            /* 【優化 1】促銷文案 RWD */
             #slogan-container {
-                margin: 10px -20px 20px; /* 擴展到全寬，抵銷 body padding */
-                border-radius: 0; /* 移除圓角 */
-                padding: 10px 15px; /* 縮小內邊距 */
-                animation: none; /* 移除動畫，節省行動設備資源 */
+                /* 利用負邊距抵銷新的 body padding 15px */
+                margin: 10px -15px 20px; 
+                border-radius: 0; 
+                padding: 12px 15px; 
+                animation: none; 
             }
 
             #slogan-container p {
-                font-size: 0.95rem; /* 縮小文字 */
+                font-size: 0.85rem; 
+                line-height: 1.3;
             }
 
             #slogan-container strong {
-                font-size: 1.2rem; /* 縮小重點文字 */
+                font-size: 1.1rem; 
+                margin: 3px 0;
             }
-            /* 原有的行動端樣式 */
+            
+            /* 【修復 2】篩選器 RWD */
             #filters {
                 justify-content: flex-start;
                 flex-wrap: nowrap;
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
-                padding: 5px 0 15px 0;
-                margin-left: -20px;
-                margin-right: -20px;
-                padding-left: 20px;
-                padding-right: 20px;
+                padding: 5px 0 15px 0; 
+                /* 負邊距抵銷 body padding 15px */
+                margin-left: -15px; 
+                margin-right: -15px;
+                padding-left: 15px; /* 讓第一個 tag 對齊內容 */
+                padding-right: 15px; /* 讓最後一個 tag 不會貼邊 */
+                margin-bottom: 20px;
             }
+            
+            /* 篩選器隱藏滾動條 */
             #filters::-webkit-scrollbar {
                 display: none;
             }
@@ -175,14 +201,17 @@
                 -ms-overflow-style: none;
                 scrollbar-width: none;
             }
-            #header-container {
-                flex-direction: column;
-                align-items: center;
+            
+            #product-list {
+                grid-template-columns: 1fr;
             }
-            h1 {
-                margin-bottom: 10px;
+            
+            /* 確保卡片內的輸入框在小螢幕上正常顯示 */
+            .quantity-control input {
+                 max-width: 100%;
             }
         }
+        /* ============================================== */
         
         .filter-tag {
             flex-shrink: 0;
@@ -637,7 +666,7 @@
                         <ul>
                             <li>**銀行名稱:** **王道銀行** (銀行代碼: <code>048</code>)</li>
                             <li>**銀行帳號:** <code>01000191591188</code></li>
-                            <li>**戶名:** [您的戶名，請自行填寫]</li>
+                            
                         </ul>
                     </div>
                     
