@@ -529,6 +529,7 @@
 
     <script>
         const apiUrl = 'https://script.google.com/macros/s/AKfycbzco3oEMAXdl8w4PfhNj9KA1pzLKOkw3uLxTN9tkqlZfm4PV14gHMJ55rppw9jBWoQU/exec';
+        const CART_STORAGE_KEY = 'shoppingCart';
         
         // DOM 元素
         const productListDiv = document.getElementById('product-list');
@@ -553,9 +554,34 @@
         let lightboxImages = [];
         let allProductsData = {};
         let activeCategory = 'all';
-        let cart = []; // 儲存購物車項目的陣列
+        let cart = loadCartFromStorage(); // 從本地儲存載入購物車
 
         // --- 購物車與頁面管理邏輯 ---
+
+        /**
+         * 從 localStorage 載入購物車資料。
+         * @returns {Array} 購物車陣列。
+         */
+        function loadCartFromStorage() {
+            try {
+                const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+                return storedCart ? JSON.parse(storedCart) : [];
+            } catch (e) {
+                console.error("無法從 localStorage 載入購物車:", e);
+                return [];
+            }
+        }
+
+        /**
+         * 將購物車資料儲存到 localStorage。
+         */
+        function saveCartToStorage() {
+            try {
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+            } catch (e) {
+                console.error("無法將購物車儲存到 localStorage:", e);
+            }
+        }
 
         function updateCartCount() {
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -564,7 +590,12 @@
         }
 
         function calculateCartTotal() {
-            return cart.reduce((total, item) => total + (parseFloat(item.price.replace('NT$', '').trim() || 0) * item.quantity), 0);
+            return cart.reduce((total, item) => {
+                // 確保價格是有效的數字，移除非數字字符 (如 NT$)
+                const priceMatch = item.price.match(/[\d,.]+/);
+                const price = priceMatch ? parseFloat(priceMatch[0].replace(/,/g, '')) : 0;
+                return total + (price * item.quantity);
+            }, 0);
         }
 
         function renderCart() {
@@ -581,6 +612,14 @@
                 const li = document.createElement('li');
                 li.className = 'cart-item';
                 
+                // 計算單項小計
+                const priceMatch = item.price.match(/[\d,.]+/);
+                const price = priceMatch ? parseFloat(priceMatch[0].replace(/,/g, '')) : 0;
+                const subtotal = (price * item.quantity).toLocaleString('en-US');
+                
+                // 產生一個 unique key 給產品，以便在結帳頁面方便複製
+                const uniqueKey = `${item.name} (${item.size}/${item.color}) - 數量: ${item.quantity}`;
+
                 li.innerHTML = `
                     <div class="cart-item-info">
                         <h4>${item.name}</h4>
@@ -588,7 +627,7 @@
                         <p>單價: ${item.price}</p>
                     </div>
                     <div class="cart-item-actions">
-                        <span class="price-display">${item.price} x ${item.quantity}</span>
+                        <span class="price-display">小計: NT$ ${subtotal}</span>
                         <button class="remove-btn" data-index="${index}"><i class="fas fa-trash-alt"></i> 移除</button>
                     </div>
                 `;
@@ -606,6 +645,7 @@
                     cart.splice(index, 1);
                     renderCart();
                     updateCartCount();
+                    saveCartToStorage(); // 移除後儲存
                 });
             });
         }
@@ -632,14 +672,17 @@
             }
 
             updateCartCount();
+            saveCartToStorage(); // 加入後儲存
             alert(`${productName} (${selectedSize}/${selectedColor}) x ${quantity} 已加入購物車！`);
         }
 
         function showCartModal(event) {
              event.stopPropagation(); // 防止點擊圖示時觸發其他事件
-             showProductList(); // 確保主內容是產品列表頁
-             cartModal.style.display = 'flex';
-             renderCart();
+             // 只有在產品列表頁面點擊購物車圖示時才處理
+             if(productPage.style.display !== 'none') {
+                cartModal.style.display = 'flex';
+                renderCart();
+             }
         }
         
         function closeCartModal() {
@@ -667,7 +710,7 @@
             }
         });
 
-        // --- 產品渲染與篩選邏輯 (修改) ---
+        // --- 產品渲染與篩選邏輯 (修改處理邏輯) ---
         
         function getAvailableSpecs(productName) {
             const product = allProductsData[productName];
@@ -680,9 +723,13 @@
             
             for (const key in details) {
                 const detail = details[key];
-                specs.sizes.add(detail['尺寸']);
-                specs.colors.add(detail['顏色']);
-                specs.detailsMap[`${detail['尺寸']}-${detail['顏色']}`] = detail['數量'];
+                // 確保尺寸和顏色不是 null 或 undefined
+                const size = detail['尺寸'] || '無';
+                const color = detail['顏色'] || '無';
+                
+                specs.sizes.add(size);
+                specs.colors.add(color);
+                specs.detailsMap[`${size}-${color}`] = detail['數量'];
             }
             
             // 確保 '無' 規格永遠在列表最前面
@@ -706,7 +753,7 @@
         
         function renderProducts(productsToRender) {
             productListDiv.innerHTML = '';
-            showProductList(); // 確保顯示產品列表
+            showProductList(); 
 
             if (Object.keys(productsToRender).length === 0) {
                 productListDiv.innerHTML = '<p style="text-align: center; width: 100%;">沒有找到相關產品。</p>';
@@ -717,7 +764,14 @@
                 const productData = productsToRender[productName];
                 const specs = getAvailableSpecs(productName);
                 const firstPrice = productData.productInfo['售價'] || 'NT$ 價格待定';
-                const hasMultipleSpecs = specs.sizes.length > 1 || specs.colors.length > 1 || (specs.sizes.length === 1 && specs.sizes.has('無') === false) || (specs.colors.length === 1 && specs.colors.has('無') === false);
+                
+                // 判斷是否為多規格：尺寸或顏色集合中任一個數量大於 1，或僅有 '無' 以外的單一規格
+                const hasMultipleSpecs = (specs.sizes.length > 1 && !(specs.sizes.length === 2 && specs.sizes.has('無'))) || 
+                                         (specs.colors.length > 1 && !(specs.colors.length === 2 && specs.colors.has('無')));
+                
+                // 如果是單一規格，需要確定規格名稱
+                const singleSize = specs.sizes.values().next().value || '無';
+                const singleColor = specs.colors.values().next().value || '無';
                 
                 const card = document.createElement('div');
                 card.className = 'product-card';
@@ -725,8 +779,10 @@
                 const photos = productData.productInfo['照片連結'] ? productData.productInfo['照片連結'].split(',').map(url => url.trim()).filter(url => url !== '') : [];
                 let imagesHtml = '';
                 if (photos.length > 0) {
+                    // 使用 encodeURIComponent 確保 JSON 格式在 HTML 屬性中安全
+                    const photosJson = JSON.stringify(photos).replace(/"/g, '&quot;'); 
                     imagesHtml = `<div class="product-images">
-                        <img src="${photos[0]}" alt="${productName}" data-photos='${JSON.stringify(photos)}'>
+                        <img src="${photos[0]}" alt="${productName}" data-photos='${photosJson}'>
                     </div>`;
                 }
                 
@@ -754,15 +810,16 @@
                         </div>
                     `;
                 } else {
-                    // 單一或無規格產品 (使用第一個找到的數量作為最大庫存)
-                    const stock = Object.values(specs.detailsMap)[0] || 0;
+                    // 單一或無規格產品
+                    const stock = specs.detailsMap[`${singleSize}-${singleColor}`] || 0;
                     const stockText = stock > 0 ? `庫存: ${stock}` : `<span class="out-of-stock">缺貨</span>`;
                     specSelectorHtml = `
                         <div class="spec-selector">
+                            ${(singleSize !== '無' || singleColor !== '無') ? `<p>規格: ${singleSize}/${singleColor}</p>` : ''}
                             <p class="stock-info" id="stock-info-${productName}">${stockText}</p>
                             <label for="qty-${productName}">數量:</label>
                             <input type="number" id="qty-${productName}" value="1" min="1" max="${stock}" ${stock === 0 ? 'disabled' : ''}>
-                            <button class="add-to-cart-btn" data-product-name="${productName}" data-price="${firstPrice}" data-size="${specs.sizes.values().next().value}" data-color="${specs.colors.values().next().value}" ${stock === 0 ? 'disabled' : ''}>加入購物車</button>
+                            <button class="add-to-cart-btn" data-product-name="${productName}" data-price="${firstPrice}" data-size="${singleSize}" data-color="${singleColor}" ${stock === 0 ? 'disabled' : ''}>加入購物車</button>
                         </div>
                     `;
                 }
@@ -796,14 +853,16 @@
                         const stockKey = `${selectedSize}-${selectedColor}`;
                         const maxStock = specs.detailsMap[stockKey] || 0;
                         
-                        stockInfoDiv.textContent = maxStock > 0 ? `庫存: ${maxStock}` : `該規格 ${selectedSize}/${selectedColor} <span class="out-of-stock">缺貨</span>`;
+                        stockInfoDiv.innerHTML = maxStock > 0 ? `庫存: ${maxStock}` : `該規格 ${selectedSize}/${selectedColor} <span class="out-of-stock">缺貨</span>`;
                         qtyInput.max = maxStock;
                         qtyInput.disabled = maxStock === 0;
-                        qtyInput.value = (maxStock > 0 && parseInt(qtyInput.value) === 0) ? 1 : Math.min(parseInt(qtyInput.value), maxStock) || 1;
-                        qtyInput.value = Math.max(1, qtyInput.value); // 確保數量至少為 1
-                        addToCartBtn.disabled = maxStock === 0;
                         
-                        // 將選定規格儲存到按鈕，以便加入購物車時取用
+                        // 確保數量不超過新庫存
+                        let currentQty = parseInt(qtyInput.value) || 1;
+                        if (currentQty > maxStock) currentQty = maxStock > 0 ? maxStock : 1;
+                        qtyInput.value = Math.max(1, currentQty); 
+                        
+                        addToCartBtn.disabled = maxStock === 0;
                         addToCartBtn.dataset.size = selectedSize;
                         addToCartBtn.dataset.color = selectedColor;
                     };
@@ -811,7 +870,7 @@
                     sizeSelect.addEventListener('change', updateStock);
                     colorSelect.addEventListener('change', updateStock);
                     qtyInput.addEventListener('input', () => {
-                        // 確保輸入數量不超過庫存
+                        // 確保輸入數量不超過庫存且至少為 1
                         const max = parseInt(qtyInput.max);
                         if (parseInt(qtyInput.value) > max) {
                             qtyInput.value = max;
@@ -830,19 +889,16 @@
                     const btn = e.currentTarget;
                     const name = btn.dataset.productName;
                     const price = btn.dataset.price;
-                    let size, color, quantity;
+                    let size = btn.dataset.size;
+                    let color = btn.dataset.color;
+                    let quantity;
                     
                     if (hasMultipleSpecs) {
-                        // 多規格從 dataset 讀取
-                        size = btn.dataset.size;
-                        color = btn.dataset.color;
                         quantity = parseInt(card.querySelector(`#qty-${name}`).value);
-                        
                     } else {
-                        // 單規格從 dataset 讀取
-                        size = btn.dataset.size;
-                        color = btn.dataset.color;
                         quantity = parseInt(card.querySelector(`#qty-${name}`).value);
+                        size = singleSize; // 再次確保單一規格的取值
+                        color = singleColor;
                     }
 
                     if (quantity > 0) {
@@ -857,9 +913,11 @@
                 if (imagesDiv) {
                     const img = imagesDiv.querySelector('img');
                     if (img && photos.length > 0) {
+                        // 由於 photosJson 已經安全處理，這裡要用 JSON.parse 讀取回來
+                        const photosFromData = JSON.parse(img.getAttribute('data-photos').replace(/&quot;/g, '"'));
                         imagesDiv.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            openLightbox(photos);
+                            openLightbox(photosFromData);
                         });
                     }
                 }
@@ -878,7 +936,7 @@
             }
         }
         
-        // --- 篩選器與初始化邏輯 (修改) ---
+        // --- 篩選器與初始化邏輯 (不變) ---
 
         function filterProducts() {
             const searchText = searchBox.value.toLowerCase();
@@ -888,8 +946,10 @@
                 const productData = allProductsData[productName];
                 const productCategory = productData.productInfo['分類'] || '無';
                 
+                // 使用邏輯或，確保搜尋範圍包含產品內容說明
                 const matchesCategory = activeCategory === 'all' || productCategory.toLowerCase() === activeCategory;
-                const matchesSearch = productName.toLowerCase().includes(searchText) || productData.productInfo['產品內容說明'].toLowerCase().includes(searchText);
+                const description = productData.productInfo['產品內容說明'] || '';
+                const matchesSearch = productName.toLowerCase().includes(searchText) || description.toLowerCase().includes(searchText);
 
                 if (matchesCategory && matchesSearch) {
                     filteredProducts[productName] = productData;
@@ -968,7 +1028,7 @@
         });
 
 
-        // --- 資料載入與處理邏輯 (修改處理結構) ---
+        // --- 資料載入與處理邏輯 (修正資料處理的健壯性) ---
 
         fetch(apiUrl)
             .then(response => {
@@ -980,19 +1040,19 @@
             .then(data => {
                 productListDiv.innerHTML = '';
 
-                if (data.length === 0) {
+                if (!Array.isArray(data) || data.length === 0) {
                     productListDiv.innerHTML = '<p>目前沒有產品資料。</p>';
                     return;
                 }
                 
-                // 資料結構調整：移除原有的庫存明細表格，只保留規格與數量以便購物車使用
                 const groupedProducts = data.reduce((acc, currentItem) => {
+                    // 確保所有關鍵欄位都有預設值，防止取值錯誤
                     const productName = currentItem['產品名稱'] || '無標題';
                     const size = currentItem['尺寸'] || '無';
                     const color = currentItem['顏色'] || '無';
                     const quantity = parseInt(currentItem['數量']) || 0;
                     const category = currentItem['分類'] || '無分類';
-                    const price = currentItem['我方售價'] || 'NT$ 0';
+                    const price = currentItem['我方售價'] || 'NT$ 價格待定';
                     const detailsKey = `${size}-${color}`;
 
                     if (!acc[productName]) {
@@ -1000,16 +1060,16 @@
                             details: {},
                             productInfo: {
                                 '售價': price,
-                                '產品內容說明': currentItem['產品內容說明'],
+                                '產品內容說明': currentItem['產品內容說明'] || '',
                                 '連結': null,
-                                '照片連結': currentItem['照片連結'],
+                                '照片連結': currentItem['照片連結'] || '',
                                 '分類': category
                             }
                         };
                     }
                     
                     // 確保價格是最新的或非空
-                    if (price !== 'NT$ 0') {
+                    if (price !== 'NT$ 價格待定') {
                          acc[productName].productInfo['售價'] = price;
                     }
 
@@ -1047,7 +1107,7 @@
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
-                productListDiv.innerHTML = '<p>載入資料失敗，請稍後再試。</p>';
+                productListDiv.innerHTML = '<p>載入資料失敗，請檢查 API 連結或瀏覽器控制台錯誤。</p>';
             });
     </script>
 
