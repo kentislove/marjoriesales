@@ -34,7 +34,7 @@
             line-height: 1.6;
         }
 
-        /* 頁面標題與購物車圖示容器 (不變) */
+        /* 頁面標題與購物車圖示容器 (已將 #cart-icon 移出此容器，此處保留不變) */
         #header-container {
             display: flex;
             justify-content: space-between;
@@ -83,17 +83,25 @@
             to { transform: scale(1.01); box-shadow: 0 8px 15px rgba(0,0,0,0.3); }
         }
 
-        /* 購物車圖示樣式 (不變) */
+        /* 購物車圖示樣式 【重要修正：改為浮動定位】 */
         #cart-icon {
-            position: relative;
+            /* 從 static 變更為 fixed，使其懸浮於視窗 */
+            position: fixed; 
+            top: 20px; /* 距離頂部 20px */
+            right: 20px; /* 距離右側 20px */
+            z-index: 1001; /* 確保它在所有其他元素（包括 Modal, Lightbox 除外）之上 */
             cursor: pointer;
             padding: 10px;
             transition: color 0.3s;
+            background-color: rgba(255, 255, 255, 0.8); /* 增加一個半透明背景，使其在複雜背景上更顯眼 */
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         #cart-icon:hover {
-            color: var(--accent-color);
+            color: var(--error-color); /* 懸浮時換個更明顯的顏色 */
         }
+        /* 原始的 #header-container 裡的 #cart-icon 定位已經移除，所以這是唯一的定位 */
 
         #cart-count {
             position: absolute;
@@ -167,10 +175,15 @@
                 margin-bottom: 0;
                 text-align: left; /* 讓標題靠左 */
                 flex-grow: 1;
-                padding-right: 10px; /* 避免 h1 貼到購物車圖示 */
+                /* 移除 padding-right: 10px，因為 #cart-icon 已經浮動，不佔據空間 */
             }
+            /* 由於 #cart-icon 已浮動，此處不再需要 flex-shrink: 0 */
+            
+            /* 【RWD 修正：調整浮動按鈕在手機上的位置】 */
             #cart-icon {
-                flex-shrink: 0;
+                top: 10px; /* 手機上離頂部更近 */
+                right: 10px; /* 手機上離右側更近 */
+                padding: 5px; /* 手機上縮小 padding */
             }
 
             /* 【RWD 修正 2】促銷文案，讓其徹底佔滿螢幕寬度 */
@@ -384,6 +397,7 @@
             background-color: rgba(0, 0, 0, 0.5);
             align-items: flex-start; /* 讓模態框靠近頂部 */
             padding-top: 5vh;
+            z-index: 1002; /* 確保購物車彈窗在浮動圖示之上 */
         }
 
         .modal-content {
@@ -662,16 +676,19 @@
 <body>
     <div id="header-container">
         <h1>Marjorie 倉庫最終清倉活動</h1>
-        <div id="cart-icon">
-            <i class="fas fa-shopping-cart fa-2x"></i>
-            <span id="cart-count">0</span>
         </div>
+    
+    <div id="cart-icon">
+        <i class="fas fa-shopping-cart fa-2x"></i>
+        <span id="cart-count">0</span>
     </div>
     
     <div id="slogan-container">
         <p>最後機會！絕版經典款全部釋出！</p>
-        <strong>全館滿千免運開跑囉！再不搶就沒了！</strong>
+        <strong>全館滿額免運開跑囉！再不搶就沒了！</strong> 
+   	<p>⚠️ 商品有缺貨狀況的，極有可能未來不再補貨！</p>
         <p>⚠️ 數量有限，採匯款順序出貨，請把握最後收藏機會！</p>
+        
     </div>
     
     <div id="main-content">
@@ -686,6 +703,14 @@
         <div id="checkout-page">
             <h2>🎉 訂單確認與付款說明</h2>
             <p style="text-align: center; font-size: 1.1rem; margin-bottom: 40px;">請依照以下步驟完成您的訂單，我們會在收到款項後盡快為您出貨。</p>
+            
+            <div id="order-summary-checkout" style="max-width: 600px; margin: 0 auto 30px; background-color: #f0f0f0; padding: 20px; border-radius: 5px; font-size: 1.1rem;">
+                <p><strong>您選擇的方案:</strong> <span id="checkout-shipping-option"></span></p>
+                <p><strong>訂單小計:</strong> NT$ <span id="checkout-subtotal"></span></p>
+                <p><strong>運費:</strong> NT$ <span id="checkout-shipping"></span></p>
+                <p style="font-size: 1.5rem; color: var(--error-color); margin-top: 10px;"><strong>總付款金額:</strong> NT$ <span id="checkout-total"></span></p>
+            </div>
+            
             <ol>
                 <li>
                     <strong>聯繫客服提供收件資訊:</strong> 
@@ -693,43 +718,30 @@
                         <img src="https://qr-official.line.me/gs/M_318latbk_GW.png?oat_content=qr" alt="LINE QR Code">
                         <p>請掃描 QR Code **或** 加入 LINE ID: **@318latbk** 留言。</p>
                         
-                        <span class="shipping-alert">
-                            🚚 **重要提醒：選擇超商店到店**
-                            <br>
-                            超商取貨付款服務須等
-                            <br>
-                            **小編提供連結後點擊下單**才支援取貨付款喔！
-                        </span>
+                        <span id="checkout-shipping-alert" class="shipping-alert">
+                            </span>
                         
                         <p style="margin-top: 20px;">請務必提供以下完整資訊：</p>
                         <ul style="list-style-type: none; padding: 0; text-align: left; max-width: 300px; margin: 10px auto;">
-                            <li>✅ **訂單明細截圖**</li>
+                            <li>✅ **訂單明細截圖** (包含總金額與運送方式)</li>
                             <li>✅ **收件人姓名**</li>
                             <li>✅ **聯絡電話**</li>
-                            <li>✅ **完整收件地址** (若選擇宅配)</li>
-                            
+                            <li id="checkout-address-needed"></li>
+                            <li id="checkout-store-needed"></li>
                         </ul>
                     </div>
                 </li>
                 <li>
-                    <strong>進行匯款:</strong> 
-                    <div class="bank-info-box">
-                        <p>請將總金額匯款至以下指定帳戶：</p>
-                        <ul>
-                            <li>**銀行名稱:** **王道銀行** (銀行代碼: <code>048</code>)</li>
-                            <li>**銀行帳號:** <code>01000191591188</code></li>
-                            
-                        </ul>
-                    </div>
-                    
-                    <p style="margin-top: 10px; font-size: 0.9em; color: var(--error-color);">**重要提醒:** 匯款完成後，請務必透過 LINE 提供**帳號後五碼**或**匯款證明截圖**給我們以供核對。</p>
+                    <strong>進行付款:</strong> 
+                    <div id="checkout-payment-details">
+                         </div>
                 </li>
                 <li><strong>等待確認:</strong> 我們會在收到您的資料與款項後，發出訂單確認通知，並儘速安排出貨。</li>
             </ol>
             <p style="text-align: center; margin-top: 40px;">感謝您的訂購！若有任何疑問，歡迎隨時聯繫客服。</p>
             <button class="back-to-cart-btn" onclick="showCartModal(event)">返回購物車</button>
         </div>
-    </div>
+        </div>
     
     <div class="modal-overlay" id="cart-modal">
         <div class="modal-content">
@@ -737,7 +749,28 @@
             <h2>我的購物車</h2>
             <ul id="cart-items-list">
                 </ul>
+
+            <div id="shipping-selector" style="margin: 15px 0; padding: 15px 0; border-top: 1px dashed var(--border-color);">
+                <h3 style="margin-top: 0; font-size: 1.3rem;">選擇配送與付款方式</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                    <label>
+                        <input type="radio" name="shipping-option" value="transfer_store" checked>
+                        匯款 (王道銀行) + 全家店到店 (<span style="color: var(--promo-color);">滿 NT$1000 免運</span>)
+                    </label>
+                    <label>
+                        <input type="radio" name="shipping-option" value="cod_store">
+                        超商取貨付款 + 全家店到店 (<span style="color: var(--promo-color);">滿 NT$2000 免運</span>)
+                    </label>
+                    <label>
+                        <input type="radio" name="shipping-option" value="home_delivery">
+                        匯款 (王道銀行) +  宅配到府 (<span style="color: var(--error-color);">運費一律 NT$145</span>)
+                    </label>
+                </div>
+            </div>
             <div id="cart-summary">
+                <div id="cart-subtotal" style="text-align: right; font-size: 1.1rem; font-weight: normal; padding-bottom: 5px;">小計 (未含運): NT$ <span id="subtotal-amount">0</span></div>
+                <div id="cart-shipping-fee" style="text-align: right; font-size: 1.1rem; font-weight: normal; padding-bottom: 5px;">運費: NT$ <span id="shipping-amount">0</span></div>
+
                 <div id="cart-total">總計: NT$ <span id="total-amount">0</span></div>
                 <button id="checkout-button">確定購買，前往結帳</button>
             </div>
@@ -766,7 +799,6 @@
         const cartCount = document.getElementById('cart-count');
         const cartModal = document.getElementById('cart-modal');
         const cartItemsList = document.getElementById('cart-items-list');
-        const totalAmountSpan = document.getElementById('total-amount');
         const checkoutButton = document.getElementById('checkout-button');
         const productPage = document.getElementById('product-page');
         const checkoutPage = document.getElementById('checkout-page');
@@ -776,12 +808,23 @@
         const prevBtn = document.querySelector('.prev-btn');
         const nextBtn = document.querySelector('.next-btn');
 
+        // 【R: 新增/修改 DOM 元素與常數 - START】
+        const shippingSelector = document.getElementById('shipping-selector');
+        const subtotalAmountSpan = document.getElementById('subtotal-amount');
+        const shippingAmountSpan = document.getElementById('shipping-amount');
+        const totalAmountSpan = document.getElementById('total-amount'); // 這是最終總計
+
+        const SHIPPING_COST_DEFAULT = 60; // 店到店的預設運費 (若未達免運門檻)
+        const SHIPPING_COST_HOME = 145; // 宅配運費一律 $145
+
         // 狀態變數
         let currentImageIndex = 0;
         let lightboxImages = [];
         let allProductsData = {};
         let activeCategory = 'all';
         let cart = loadCartFromStorage(); // 從本地儲存載入購物車
+        let selectedShippingOption = 'transfer_store'; // 【R: 新增】預設選項：匯款 + 店到店
+        // 【R: 新增/修改 DOM 元素與常數 - END】
 
         // --- 購物車與頁面管理邏輯 ---
 
@@ -816,7 +859,8 @@
             cartCount.style.display = totalItems > 0 ? 'block' : 'none';
         }
 
-        function calculateCartTotal() {
+        // 【R: 重新命名/修改】只計算商品總價 (Subtotal)
+        function calculateCartSubtotal() {
             return cart.reduce((total, item) => {
                 // 確保價格是有效的數字，移除非數字字符 (如 NT$)
                 const priceMatch = item.price.match(/[\d,.]+/);
@@ -825,16 +869,38 @@
             }, 0);
         }
 
+        // 【R: 新增】計算運費
+        function calculateShippingFee(subtotal, option) {
+            if (option === 'home_delivery') {
+                return SHIPPING_COST_HOME; // 宅配一律 145
+            } else if (option === 'transfer_store') {
+                // 匯款 + 店到店: 滿 NT$1000 免運
+                return subtotal >= 1000 ? 0 : SHIPPING_COST_DEFAULT; 
+            } else if (option === 'cod_store') {
+                // 貨到付款 + 店到店: 滿 NT$2000 免運
+                return subtotal >= 2000 ? 0 : SHIPPING_COST_DEFAULT; 
+            }
+            return 0; // 預設值
+        }
+
         function renderCart() {
             cartItemsList.innerHTML = '';
             
+            const subtotal = calculateCartSubtotal();
+            
             if (cart.length === 0) {
                 cartItemsList.innerHTML = '<p style="text-align: center; color: var(--subtle-text-color);">購物車是空的！快去挑選喜歡的產品吧。</p>';
+                subtotalAmountSpan.textContent = '0';
+                shippingAmountSpan.textContent = '0';
                 totalAmountSpan.textContent = '0';
                 checkoutButton.disabled = true;
+                shippingSelector.style.display = 'none'; // 購物車為空時隱藏選擇器
                 return;
             }
             
+            shippingSelector.style.display = 'block'; // 購物車有東西時顯示選擇器
+            
+            // 1. 渲染產品項目
             cart.forEach((item, index) => {
                 const li = document.createElement('li');
                 li.className = 'cart-item';
@@ -842,10 +908,7 @@
                 // 計算單項小計
                 const priceMatch = item.price.match(/[\d,.]+/);
                 const price = priceMatch ? parseFloat(priceMatch[0].replace(/,/g, '')) : 0;
-                const subtotal = (price * item.quantity).toLocaleString('en-US');
-                
-                // 產生一個 unique key 給產品，以便在結帳頁面方便複製
-                const uniqueKey = `${item.name} (${item.size}/${item.color}) - 數量: ${item.quantity}`;
+                const subtotalItem = (price * item.quantity).toLocaleString('en-US');
 
                 li.innerHTML = `
                     <div class="cart-item-info">
@@ -854,7 +917,7 @@
                         <p>單價: ${item.price}</p>
                     </div>
                     <div class="cart-item-actions">
-                        <span class="price-display">小計: NT$ ${subtotal}</span>
+                        <span class="price-display">小計: NT$ ${subtotalItem}</span>
                         <button class="remove-btn" data-index="${index}"><i class="fas fa-trash-alt"></i> 移除</button>
                     </div>
                 `;
@@ -862,19 +925,33 @@
                 cartItemsList.appendChild(li);
             });
             
-            totalAmountSpan.textContent = calculateCartTotal().toLocaleString('en-US');
+            // 2. 計算運費與總計
+            const shippingFee = calculateShippingFee(subtotal, selectedShippingOption);
+            const finalTotal = subtotal + shippingFee;
+
+            // 3. 更新總額顯示
+            subtotalAmountSpan.textContent = subtotal.toLocaleString('en-US');
+            shippingAmountSpan.textContent = shippingFee.toLocaleString('en-US');
+            totalAmountSpan.textContent = finalTotal.toLocaleString('en-US');
+            
             checkoutButton.disabled = false;
             
-            // 綁定移除按鈕事件
+            // 4. 綁定移除按鈕事件
             cartItemsList.querySelectorAll('.remove-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const index = parseInt(e.currentTarget.dataset.index);
                     cart.splice(index, 1);
-                    renderCart();
+                    renderCart(); // 移除後重新渲染
                     updateCartCount();
-                    saveCartToStorage(); // 移除後儲存
+                    saveCartToStorage(); 
                 });
             });
+
+            // 5. 確保選中的 Radio Button 狀態正確
+            const selectedRadio = shippingSelector.querySelector(`input[value="${selectedShippingOption}"]`);
+            if (selectedRadio) {
+                selectedRadio.checked = true;
+            }
         }
 
         function addToCart(productName, selectedSize, selectedColor, quantity, price) {
@@ -908,7 +985,7 @@
              // 只有在產品列表頁面點擊購物車圖示時才處理
              if(productPage.style.display !== 'none') {
                 cartModal.style.display = 'flex';
-                renderCart();
+                renderCart(); // 顯示時確保內容是最新的
              }
         }
         
@@ -916,13 +993,102 @@
             cartModal.style.display = 'none';
         }
         
+        // 【R: 修改】動態生成結帳頁面內容
         function showCheckoutPage() {
             productPage.style.display = 'none';
             checkoutPage.style.display = 'block';
             cartModal.style.display = 'none';
             window.scrollTo({ top: 0, behavior: 'smooth' }); // 滾動到頁面頂部
+            
+            // ============ 結帳頁面動態內容生成 ============
+            const subtotal = calculateCartSubtotal();
+            const shippingFee = calculateShippingFee(subtotal, selectedShippingOption);
+            const finalTotal = subtotal + shippingFee;
+            
+            // 1. 訂單總結
+            document.getElementById('checkout-subtotal').textContent = subtotal.toLocaleString('en-US');
+            document.getElementById('checkout-shipping').textContent = shippingFee.toLocaleString('en-US');
+            document.getElementById('checkout-total').textContent = finalTotal.toLocaleString('en-US');
+            
+            let shippingOptionText = '';
+            let alertHtml = '';
+            let paymentDetailsHtml = '';
+            let addressNeededHtml = '';
+            let storeNeededHtml = '';
+            
+            const bankTransferHtml = `
+                <div class="bank-info-box">
+                    <p>請將總金額匯款至以下指定帳戶：</p>
+                    <ul>
+                        <li>**銀行名稱:** **王道銀行** (銀行代碼: <code>048</code>)</li>
+                        <li>**銀行帳號:** <code>01000191591188</code></li>
+                    </ul>
+                </div>
+                <p style="margin-top: 10px; font-size: 0.9em; color: var(--error-color);">**重要提醒:** 匯款完成後，請務必透過 LINE 提供**帳號後五碼**或**匯款證明截圖**給我們以供核對。</p>
+            `;
+            
+            const codHtml = `
+                <div class="bank-info-box" style="background-color: #f7fff0; border-color: #d8ffd8; color: #387038;">
+                    <p><strong>您選擇貨到付款，無需預先匯款。</strong></p>
+                    <p>請等待客服提供**取貨下單連結**，您將在超商取貨時支付所有款項。</p>
+                </div>
+            `;
+
+            switch (selectedShippingOption) {
+                case 'transfer_store':
+                    shippingOptionText = `匯款 + 全家店到店 (滿 NT$1000 免運)`;
+                    alertHtml = `
+                        🚚 **超商取貨 - 匯款後出貨**
+                        <br>
+                        請提供**全家門市名稱/店號**以供寄件。
+                        ${shippingFee === 0 ? '<br><span style="color:var(--success-color);">🎉 本次享免運優惠！</span>' : `<br>本次運費 NT$${SHIPPING_COST_DEFAULT}。`}
+                    `;
+                    storeNeededHtml = '<li>✅ **全家門市名稱/店號**</li>';
+                    paymentDetailsHtml = bankTransferHtml;
+                    break;
+                    
+                case 'cod_store':
+                    shippingOptionText = `超商取貨付款 + 全家店到店 (滿 NT$2000 免運)`;
+                    alertHtml = `
+                        🚚 **重要提醒：超商取貨付款**
+                        <br>
+                        超商取貨付款服務須等
+                        <br>
+                        **小編提供連結後點擊下單**才支援取貨付款喔！
+                        ${shippingFee === 0 ? '<br><span style="color:var(--success-color);">🎉 本次享免運優惠！</span>' : `<br>本次運費 NT$${SHIPPING_COST_DEFAULT}。`}
+                    `;
+                    storeNeededHtml = '<li>✅ **全家門市名稱/店號**</li>';
+                    paymentDetailsHtml = codHtml;
+                    break;
+
+                case 'home_delivery':
+                    shippingOptionText = `宅配到府 (運費一律 NT$${SHIPPING_COST_HOME})`;
+                    // 為了簡化流程，假設宅配默認使用匯款支付，否則需要更多選項來區分付款方式
+                    alertHtml = `
+                        🚚 **重要提醒：宅配到府 (匯款後出貨)**
+                        <br>
+                        運費一律 ${SHIPPING_COST_HOME} 元。請提供您的**完整收件地址**。
+                    `;
+                    addressNeededHtml = '<li>✅ **完整收件地址** (必填)</li>';
+                    paymentDetailsHtml = bankTransferHtml; 
+                    break;
+                    
+                default:
+                    shippingOptionText = '未選擇配送方式';
+                    paymentDetailsHtml = '<p style="color: var(--error-color);">請返回購物車選擇配送方式！</p>';
+                    break;
+            }
+            
+            document.getElementById('checkout-shipping-option').textContent = shippingOptionText;
+            document.getElementById('checkout-shipping-alert').innerHTML = alertHtml;
+            document.getElementById('checkout-payment-details').innerHTML = paymentDetailsHtml;
+            
+            // 更新收件資訊列表
+            document.getElementById('checkout-address-needed').innerHTML = addressNeededHtml;
+            document.getElementById('checkout-store-needed').innerHTML = storeNeededHtml;
         }
-        
+        // 【R: 修改 showCheckoutPage 函式 - END】
+
         function showProductList() {
              productPage.style.display = 'block';
              checkoutPage.style.display = 'none';
@@ -934,6 +1100,14 @@
         cartModal.addEventListener('click', (e) => {
             if (e.target === cartModal) {
                 closeCartModal();
+            }
+        });
+
+        // 【R: 新增】配送選項變更事件
+        shippingSelector.addEventListener('change', (e) => {
+            if (e.target.name === 'shipping-option') {
+                selectedShippingOption = e.target.value;
+                renderCart(); // 運送方式變更時，重新計算運費和總價
             }
         });
         
@@ -1400,6 +1574,3 @@
 
 </body>
 </html>
-
-
-
