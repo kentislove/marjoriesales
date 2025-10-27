@@ -352,10 +352,21 @@
             line-height: 1.6;
         }
         
+        /* 【新增】原價樣式 */
+        .product-info .original-price {
+            font-size: 0.95rem; /* 較小字體 */
+            color: var(--subtle-text-color); /* 較淺顏色 */
+            text-decoration: line-through; /* 刪除線 */
+            margin-bottom: 0px; /* 緊鄰實際售價 */
+            margin-top: 0;
+        }
+        
+        /* 【修改】實際售價樣式 */
         .product-info .price {
-            font-size: 1.2rem;
+            font-size: 1.5rem; /* 放大實際價格 */
             color: var(--error-color);
-            font-weight: 500;
+            font-weight: 700; /* 加粗 */
+            margin-top: 5px; /* 與原價分隔 */
             margin-bottom: 10px;
         }
 
@@ -1229,6 +1240,7 @@
                 const safeProductId = getSafeId(productName); // 【關鍵修正】取得安全 ID
                 const specs = getAvailableSpecs(productName);
                 const firstPrice = productData.productInfo['售價'] || 'NT$ 價格待定';
+                const originalPrice = productData.productInfo['原價'] || ''; // 【修改點 3-1: 取得原價】
                 
                 // 判斷是否為多規格：尺寸或顏色集合中任一個數量大於 1，或僅有 '無' 以外的單一規格
                 const hasMultipleSpecs = (specs.sizes.length > 1 && !(specs.sizes.length === 2 && specs.sizes.includes('無'))) || 
@@ -1295,7 +1307,7 @@
                     <div class="product-info">
                         <h2>${productName}</h2>
                         <p><strong>分類:</strong> ${productData.productInfo['分類'] || '無'}</p>
-                        <p class="price"><strong>售價:</strong> ${firstPrice}</p>
+                        ${originalPrice ? `<p class="original-price">原價: ${originalPrice}</p>` : ''} <p class="price"><strong>售價:</strong> ${firstPrice}</p>
                         <p><strong>產品內容:</strong> ${productData.productInfo['產品內容說明'] || '無'}</p>
                         ${specSelectorHtml}
                     </div>
@@ -1558,7 +1570,10 @@
                     const color = String(currentItem['顏色'] || '無');
                     const quantity = parseInt(currentItem['數量']) || 0;
                     const category = currentItem['分類'] || '無分類';
+                    
+                    const originalPrice = currentItem['價格'] || 'NT$ 原價待定'; // 【修改點 2-1: 取得原價】
                     const price = currentItem['我方售價'] || 'NT$ 價格待定';
+                    
                     const detailsKey = `${size}-${color}`;
 
                     if (!acc[productName]) {
@@ -1566,6 +1581,7 @@
                             details: {},
                             productInfo: {
                                 '售價': price,
+                                '原價': originalPrice, // 【修改點 2-2: 儲存原價】
                                 '產品內容說明': currentItem['產品內容說明'] || '',
                                 '連結': null,
                                 '照片連結': currentItem['照片連結'] || '',
@@ -1578,6 +1594,11 @@
                     if (price !== 'NT$ 價格待定') {
                          acc[productName].productInfo['售價'] = price;
                     }
+                    
+                    if (originalPrice !== 'NT$ 原價待定') {
+                        acc[productName].productInfo['原價'] = originalPrice; // 【修改點 2-3: 更新原價】
+                    }
+
 
                     // 處理連結
                     if (!acc[productName].productInfo['連結']) {
