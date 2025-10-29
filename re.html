@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>產品數量小計報表 (已修正JSON格式)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .quantity-total { text-align: right; font-weight: bold; }
+        .grand-total { background-color: #e0e0e0; font-weight: bold; }
+        #controls { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-message">
+        <h1>產品數量小計報表</h1>
+        <p>正在從 Google Apps Script 載入資料...</p>
+    </div>
+    
+    <div id="controls" style="display: none;">
+        <label for="productSearch">產品名稱關鍵字搜尋:</label>
+        <input type="text" id="productSearch" placeholder="留空則顯示全部產品..." style="width: 300px; padding: 5px;">
+        <button onclick="handleSearch()" style="padding: 5px 10px;">執行搜尋/重新計算</button>
+        <p id="filter-status" style="margin-top: 10px; font-weight: bold;"></p>
+        <hr>
+    </div>
+
+    <div id="report-container">
+        </div>
+
+    <script>
+        // 🚨 Apps Script 執行網址
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKANC6RockaftLdI114N5_OPkqlTZFcU9x5UHFsX7O0nneICwAW4-G0kR0zgu9Gh0iwA/exec';
+
+        // 🚨 修正：使用欄位名稱 (JSON Key) 來存取資料
+        const KEY_PRODUCT_NAME = '產品名稱';
+        const KEY_SIZE = '尺寸';
+        const KEY_COLOR = '顏色';
+        const KEY_QUANTITY = '數量'; 
+        
+        // 全域變數
+        let allDataRows = []; // 儲存所有資料物件
+        let headers = {};     // 儲存欄位標頭 (用於報表標題顯示)
+
+        // --- 資料處理函式 ---
+
+        /** 依據指定的欄位名稱 (KEY) 對資料進行分組加總。
+         * @param {Array<Object>} dataRows - 資料物件陣列。
+         * @param {Array<string>} groupingKeys - 用於分組的欄位名稱 (e.g., ['產品名稱', '顏色'])。
+         * @returns {Object} - 以 '分組鍵' 為鍵，'小計數量' 為值的物件。
+         */
+        function aggregateData(dataRows, groupingKeys) {
+            const summary = {};
+            for (let i = 0; i < dataRows.length; i++) {
+                const row = dataRows[i];
+                
+                // 修正：從物件中取得數量
+                const quantity = parseInt(row[KEY_QUANTITY]) || 0;
+                if (quantity === 0) continue; 
+
+                // 修正：從物件中取得分組值，並建立分組用的唯一鍵值
+                const keyParts = groupingKeys.map(key => String(row[key] || ''));
+                const key = keyParts.join(' | ');
+
+                summary[key] = (summary[key] || 0) + quantity;
+            }
+            return summary;
+        }
+
+        /** 產生報表表格的 HTML 內容。 (邏輯不變，但傳入的 headerLabels 現在是字串陣列)*/
+        function createReportTable(title, summaryData, headerLabels) {
+            let html = `<h2>${title}</h2>`;
+            html += '<table><thead><tr>';
+            
+            // 加入分組欄位標頭
+            headerLabels.forEach(label => {
+                html += `<th>${label}</th>`;
+            });
+            html += '<th>數量小計</th></tr></thead><tbody>';
+
+            // 依鍵值排序
+            const sortedKeys = Object.keys(summaryData).sort();
+            let grandTotal = 0;
+
+            sortedKeys.forEach(key => {
+                const keyParts = key.split(' | ');
+                const total = summaryData[key];
+                grandTotal += total;
+                
+                html += '<tr>';
+                // 加入分組值
+                keyParts.forEach(part => {
+                     html += `<td>${part}</td>`;
+                });
+                // 加入數量小計
+                html += `<td class="quantity-total">${total}</td>`;
+                html += '</tr>';
+            });
+            
+            // 加入總計列
+            html += '<tr>';
+            html += `<td colspan="${headerLabels.length}" style="text-align: right;" class="grand-total">總計 (Grand Total):</td>`;
+            html += `<td class="quantity-total grand-total">${grandTotal}</td>`;
+            html += '</tr>';
+
+            html += '</tbody></table><br>';
+            return html;
+        }
+
+        // --- 報表生成與控制函式 ---
+
+        /**
+         * 根據搜尋關鍵字生成報表。
+         * @param {string} searchTerm - 產品名稱的關鍵字。
+         */
+        function generateReport(searchTerm) {
+            const reportContainer = document.getElementById('report-container');
+            const filterStatus = document.getElementById('filter-status');
+            
+            if (allDataRows.length === 0) {
+                reportContainer.innerHTML = '<p style="color: red;">錯誤：資料尚未載入或為空。</p>';
+                return;
+            }
+
+            // 1. 篩選資料
+            const lowerCaseSearchTerm = searchTerm.trim().toLowerCase();
+            let filteredDataRows = allDataRows;
+
+            if (lowerCaseSearchTerm) {
+                filteredDataRows = allDataRows.filter(row => {
+                    // 修正：從物件中取得產品名稱
+                    const productName = String(row[KEY_PRODUCT_NAME] || '').toLowerCase(); 
+                    return productName.includes(lowerCaseSearchTerm);
+                });
+                filterStatus.innerHTML = `篩選結果: 找到 ${filteredDataRows.length} 筆符合關鍵字 **"${searchTerm}"** 的記錄。`;
+            } else {
+                filterStatus.innerHTML = `目前顯示所有 **${allDataRows.length}** 筆記錄的小計。`;
+            }
+            
+            if (filteredDataRows.length === 0) {
+                 reportContainer.innerHTML = `<h2>無結果</h2><p>找不到符合關鍵字 **"${searchTerm}"** 的產品名稱記錄。</p>`;
+                 return;
+            }
+
+            // 2. 生成報表
+            let reportHTML = '';
+            
+            // 由於 headers 現在是物件的 key，所以直接使用 key 來當作欄位名稱
+            const headerProductName = KEY_PRODUCT_NAME;
+            const headerColor = KEY_COLOR;
+            const headerSize = KEY_SIZE;
+
+
+            // 1. 同個產品數量的小計 (Product Name)
+            const summary1 = aggregateData(filteredDataRows, [KEY_PRODUCT_NAME]);
+            reportHTML += createReportTable(
+                '1. 同個產品數量的小計 (按產品名稱)', 
+                summary1, 
+                [headerProductName]
+            );
+
+            // 2. 同個產品同樣顏色的小計 (Product Name + Color)
+            const summary2 = aggregateData(filteredDataRows, [KEY_PRODUCT_NAME, KEY_COLOR]);
+            reportHTML += createReportTable(
+                '2. 同個產品同樣顏色的小計 (按產品名稱, 顏色)', 
+                summary2, 
+                [headerProductName, headerColor]
+            );
+
+            // 3. 同個產品同樣尺寸的小計 (Product Name + Size)
+            const summary3 = aggregateData(filteredDataRows, [KEY_PRODUCT_NAME, KEY_SIZE]);
+            reportHTML += createReportTable(
+                '3. 同個產品同樣尺寸的小計 (按產品名稱, 尺寸)', 
+                summary3, 
+                [headerProductName, headerSize]
+            );
+
+            // 4. 同個產品同樣尺寸及顏色的小計 (Product Name + Size + Color)
+            const summary4 = aggregateData(filteredDataRows, [KEY_PRODUCT_NAME, KEY_SIZE, KEY_COLOR]);
+            reportHTML += createReportTable(
+                '4. 同個產品同樣尺寸及顏色的小計 (按產品名稱, 尺寸, 顏色)', 
+                summary4, 
+                [headerProductName, headerSize, headerColor]
+            );
+
+            reportContainer.innerHTML = reportHTML;
+        }
+        
+        /** 處理搜尋按鈕點擊事件 */
+        function handleSearch() {
+            const searchTerm = document.getElementById('productSearch').value;
+            generateReport(searchTerm);
+        }
+
+        /** 首次載入資料並初始化報表 */
+        async function loadDataAndInitReport() {
+            const loadingMessage = document.getElementById('loading-message');
+            const controls = document.getElementById('controls');
+            
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json(); 
+                
+                // 檢查資料是否為物件陣列，且非空
+                if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object' || data[0] === null) {
+                    loadingMessage.innerHTML = '<h1>產品數量小計報表</h1><p style="color: red;">錯誤：Apps Script 回傳的資料格式不正確 (非有效的物件陣列)。</p>';
+                    return;
+                }
+
+                // 儲存資料到全域變數 (整個陣列都是資料列)
+                allDataRows = data; 
+                
+                // 移除載入中訊息，顯示控制項
+                loadingMessage.style.display = 'none';
+                controls.style.display = 'block';
+
+                if (allDataRows.length === 0) {
+                     document.getElementById('report-container').innerHTML = '<h1>產品數量小計報表</h1><p>資料載入成功，但沒有可處理的記錄。</p>';
+                    return;
+                }
+
+                // 初始生成報表（無關鍵字篩選）
+                generateReport('');
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                loadingMessage.innerHTML = `<h1>產品數量小計報表</h1><p style="color: red;">錯誤：載入資料失敗。請檢查您的網路連線或 Apps Script 部署和回傳格式是否正確。</p><p>詳細錯誤: ${error.message}</p>`;
+            }
+        }
+
+        // 頁面載入完成後執行
+        window.onload = loadDataAndInitReport;
+    </script>
+</body>
+</html>
