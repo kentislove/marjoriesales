@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>產品數量小計報表 (多條件查詢)</title>
+    <title>產品數量小計報表</title>
     <style>
         /* 基礎設定 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
             margin: 0; 
             padding: 0; 
-            background-color: #f8f8f8; /* 淺灰色背景 */
+            background-color: #f8f8f8;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -22,7 +22,7 @@
             width: 100%;
             max-width: 1100px;
             padding: 20px;
-            background-color: #ffffff; /* 內容區域白色背景 */
+            background-color: #ffffff; 
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
             margin: 20px 0;
             border-radius: 8px;
@@ -66,21 +66,35 @@
             min-width: 100px;
         }
         
-        /* 按鈕美化 */
+        /* 按鈕風格 */
         #controls button { 
             padding: 10px 20px; 
-            background-color: #4CAF50; /* 綠色或您品牌的強調色 */
-            color: white; 
             border: none; 
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
             font-weight: bold;
         }
-
-        #controls button:hover {
+        
+        /* 搜尋按鈕 */
+        #search-button {
+            background-color: #4CAF50; /* 綠色 */
+            color: white;
+        }
+        #search-button:hover {
             background-color: #45a049;
         }
+
+        /* 列印按鈕 */
+        #print-button {
+            background-color: #007bff; /* 藍色 */
+            color: white;
+            margin-left: 20px; /* 區隔搜尋按鈕 */
+        }
+        #print-button:hover {
+            background-color: #0056b3;
+        }
+
 
         #filter-status { 
             margin-top: 15px; 
@@ -90,7 +104,7 @@
 
         /* 報表格風格 */
         h2 {
-            color: #007bff; /* 藍色作為報表標題強調色 */
+            color: #007bff;
             margin-top: 30px;
             padding-bottom: 5px;
             border-bottom: 1px solid #e9ecef;
@@ -102,7 +116,7 @@
             margin-top: 15px; 
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             border-radius: 4px;
-            overflow: hidden; /* 確保圓角效果 */
+            overflow: hidden;
         }
         
         th, td { 
@@ -112,10 +126,10 @@
         }
 
         th { 
-            background-color: #343a40; /* 深色表頭 */
+            background-color: #343a40; 
             color: white;
             font-weight: 600; 
-            position: sticky; /* 固定表頭 */
+            position: sticky;
             top: 0;
             z-index: 10;
         }
@@ -126,17 +140,17 @@
         }
         
         tbody tr:hover {
-            background-color: #e9ecef; /* 滑鼠經過高亮 */
+            background-color: #e9ecef;
         }
 
         .quantity-total { 
             text-align: right; 
             font-weight: bold; 
-            background-color: #fff0f5; /* 淺粉色區分數量 */
+            background-color: #fff0f5; 
         }
 
         .grand-total { 
-            background-color: #ffc107; /* 黃色強調總計 */
+            background-color: #ffc107; 
             color: #333;
             font-weight: 700;
         }
@@ -149,6 +163,67 @@
             background-color: #f8d7da;
             border-radius: 4px;
             margin-top: 20px;
+        }
+
+        /* ****************************************************** */
+        /* 列印專用 CSS 規則 (@media print) */
+        /* ****************************************************** */
+        @media print {
+            body {
+                background-color: #fff; /* 列印時背景設為白色 */
+                margin: 0;
+                padding: 0;
+                /* 取消置中效果，使用標準列印佈局 */
+                display: block; 
+                width: 100%;
+            }
+            
+            #main-container {
+                box-shadow: none; /* 移除陰影 */
+                margin: 0;
+                padding: 0;
+                max-width: none;
+                border: none;
+            }
+
+            /* 隱藏所有不需要列印的元素 (例如搜尋框和按鈕) */
+            #controls, #loading-message, hr {
+                display: none !important;
+            }
+            
+            /* 讓標題和報表更容易閱讀 */
+            h1 {
+                text-align: center;
+                border-bottom: 1px solid #000;
+            }
+
+            /* 確保表格顏色和邊框在列印時清晰可見 */
+            table {
+                box-shadow: none;
+                border: 1px solid #000;
+                page-break-inside: auto; /* 允許表格在不同頁面間斷開 */
+            }
+            
+            tr {
+                page-break-inside: avoid; /* 避免單行在頁面間斷開 */
+                page-break-after: auto; 
+            }
+            
+            /* 確保表頭在每頁都顯示 */
+            thead {
+                display: table-header-group;
+            }
+            
+            th, td {
+                border-color: #000 !important;
+                background-color: transparent !important; /* 移除背景色，節省墨水 */
+                color: #000 !important;
+                padding: 8px 10px; /* 縮小邊距 */
+            }
+
+            .grand-total {
+                border-top: 2px solid #000 !important;
+            }
         }
     </style>
 </head>
@@ -175,7 +250,8 @@
                     <input type="text" id="colorSearch" placeholder="例如：黑, 紅..." style="width: 100px;">
                 </div>
 
-                <button onclick="handleSearch()">執行搜尋/載入資料</button>
+                <button id="search-button" onclick="handleSearch()">執行搜尋/載入資料</button>
+                <button id="print-button" onclick="printReport()">列印報表</button>
             </div>
             
             <p id="filter-status"></p>
@@ -193,7 +269,7 @@
         // 🚨 Apps Script 執行網址 (請確認是否正確)
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKANC6RockaftLdI114N5_OPkqlTZFcU9x5UHFsX7O0nneICwAW4-G0kR0zgu9Gh0iwA/exec';
 
-        // 欄位名稱 (JSON Key) - 保持與上一次修正版本一致
+        // 欄位名稱 (JSON Key)
         const KEY_PRODUCT_NAME = '產品名稱';
         const KEY_SIZE = '尺寸';
         const KEY_COLOR = '顏色';
@@ -224,6 +300,7 @@
             headerLabels.forEach(label => {
                 html += `<th>${label}</th>`;
             });
+            // 修正：將表頭的對齊方式設為右對齊，與內容對齊
             html += '<th style="text-align: right;">數量小計</th></tr></thead><tbody>';
 
             const sortedKeys = Object.keys(summaryData).sort();
@@ -310,7 +387,7 @@
                 const color = String(row[KEY_COLOR] || '').toLowerCase();
 
                 const productMatch = !searchProduct || productName.includes(searchProduct);
-                const sizeMatch = !searchSize || size === searchSize; // 尺寸和顏色使用精確匹配
+                const sizeMatch = !searchSize || size === searchSize;
                 const colorMatch = !searchColor || color === searchColor;
 
                 return productMatch && sizeMatch && colorMatch;
@@ -363,7 +440,12 @@
 
             container.innerHTML = reportHTML;
         }
+
+        /** 列印功能 */
+        function printReport() {
+            // window.print() 呼叫系統列印對話框，適用於所有瀏覽器/裝置
+            window.print();
+        }
     </script>
 </body>
 </html>
-
