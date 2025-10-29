@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>產品數量小計報表</title>
+    <style>
+        /* 基礎設定 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        /* 容器限制寬度並居中 */
+        #main-container {
+            width: 100%;
+            max-width: 1100px;
+            padding: 20px;
+            background-color: #ffffff; 
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* 查詢控制區 */
+        #controls {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            background-color: #f0f0f0; 
+            border-radius: 6px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        #controls label { 
+            font-weight: 600; 
+            color: #555;
+            flex-shrink: 0;
+        }
+
+        #controls input { 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px;
+            flex-grow: 1;
+            min-width: 100px;
+        }
+        
+        /* 按鈕風格 */
+        #controls button { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        
+        /* 搜尋按鈕 */
+        #search-button {
+            background-color: #4CAF50; /* 綠色 */
+            color: white;
+        }
+        #search-button:hover {
+            background-color: #45a049;
+        }
+
+        /* 列印按鈕 */
+        #print-button {
+            background-color: #007bff; /* 藍色 */
+            color: white;
+            margin-left: 20px; /* 區隔搜尋按鈕 */
+        }
+        #print-button:hover {
+            background-color: #0056b3;
+        }
+
+
+        #filter-status { 
+            margin-top: 15px; 
+            font-weight: 600; 
+            color: #333;
+        }
+
+        /* 報表格風格 */
+        h2 {
+            color: #007bff;
+            margin-top: 30px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        th, td { 
+            border: 1px solid #dee2e6; 
+            padding: 12px 15px; 
+            text-align: left; 
+        }
+
+        th { 
+            background-color: #343a40; 
+            color: white;
+            font-weight: 600; 
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        /* 斑馬紋 */
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .quantity-total { 
+            text-align: right; 
+            font-weight: bold; 
+            background-color: #fff0f5; 
+        }
+
+        .grand-total { 
+            background-color: #ffc107; 
+            color: #333;
+            font-weight: 700;
+        }
+        
+        #loading-message {
+            color: #dc3545;
+            font-weight: bold;
+            padding: 15px;
+            border: 1px solid #f5c6cb;
+            background-color: #f8d7da;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        /* ****************************************************** */
+        /* 列印專用 CSS 規則 (@media print) */
+        /* ****************************************************** */
+        @media print {
+            body {
+                background-color: #fff; /* 列印時背景設為白色 */
+                margin: 0;
+                padding: 0;
+                /* 取消置中效果，使用標準列印佈局 */
+                display: block; 
+                width: 100%;
+            }
+            
+            #main-container {
+                box-shadow: none; /* 移除陰影 */
+                margin: 0;
+                padding: 0;
+                max-width: none;
+                border: none;
+            }
+
+            /* 隱藏所有不需要列印的元素 (例如搜尋框和按鈕) */
+            #controls, #loading-message, hr {
+                display: none !important;
+            }
+            
+            /* 讓標題和報表更容易閱讀 */
+            h1 {
+                text-align: center;
+                border-bottom: 1px solid #000;
+            }
+
+            /* 確保表格顏色和邊框在列印時清晰可見 */
+            table {
+                box-shadow: none;
+                border: 1px solid #000;
+                page-break-inside: auto; /* 允許表格在不同頁面間斷開 */
+            }
+            
+            tr {
+                page-break-inside: avoid; /* 避免單行在頁面間斷開 */
+                page-break-after: auto; 
+            }
+            
+            /* 確保表頭在每頁都顯示 */
+            thead {
+                display: table-header-group;
+            }
+            
+            th, td {
+                border-color: #000 !important;
+                background-color: transparent !important; /* 移除背景色，節省墨水 */
+                color: #000 !important;
+                padding: 8px 10px; /* 縮小邊距 */
+            }
+
+            .grand-total {
+                border-top: 2px solid #000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-container">
+
+        <h1>產品數量小計報表</h1>
+
+        <div id="controls">
+            <div class="filter-group">
+                <div>
+                    <label for="productSearch">產品名稱關鍵字:</label>
+                    <input type="text" id="productSearch" placeholder="部分名稱..." style="width: 200px;">
+                </div>
+                
+                <div>
+                    <label for="sizeSearch">尺寸:</label>
+                    <input type="text" id="sizeSearch" placeholder="例如：S, M..." style="width: 80px;">
+                </div>
+
+                <div>
+                    <label for="colorSearch">顏色:</label>
+                    <input type="text" id="colorSearch" placeholder="例如：黑, 紅..." style="width: 100px;">
+                </div>
+
+                <button id="search-button" onclick="handleSearch()">執行搜尋/載入資料</button>
+                <button id="print-button" onclick="printReport()">列印報表</button>
+            </div>
+            
+            <p id="filter-status"></p>
+        </div>
+
+        <div id="loading-message" style="display: none;">
+            <p>正在載入資料，請稍候...</p>
+        </div>
+
+        <div id="report-container">
+            <p style="text-align: center; color: #6c757d;">請輸入條件並點擊上方按鈕載入資料並計算小計。</p>
+        </div>
+        
+    </div> <script>
+        // 🚨 Apps Script 執行網址 (請確認是否正確)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzco3oEMAXdl8w4PfhNj9KA1pzLKOkw3uLxTN9tkqlZfm4PV14gHMJ55rppw9jBWoQU/exec';
+
+        // 欄位名稱 (JSON Key)
+        const KEY_PRODUCT_NAME = '產品名稱';
+        const KEY_SIZE = '尺寸';
+        const KEY_COLOR = '顏色';
+        const KEY_QUANTITY = '數量'; 
+        
+        let allDataRows = []; 
+
+        /** 依據指定的欄位名稱 (KEY) 對資料進行分組加總。 */
+        function aggregateData(dataRows, groupingKeys) {
+            const summary = {};
+            for (const row of dataRows) {
+                const quantity = parseInt(row[KEY_QUANTITY]) || 0;
+                if (quantity === 0) continue; 
+
+                const keyParts = groupingKeys.map(key => String(row[key] || ''));
+                const key = keyParts.join(' | ');
+
+                summary[key] = (summary[key] || 0) + quantity;
+            }
+            return summary;
+        }
+
+        /** 產生報表表格的 HTML 內容。*/
+        function createReportTable(title, summaryData, headerLabels) {
+            let html = `<h2>${title}</h2>`;
+            html += '<table><thead><tr>';
+            
+            headerLabels.forEach(label => {
+                html += `<th>${label}</th>`;
+            });
+            // 修正：將表頭的對齊方式設為右對齊，與內容對齊
+            html += '<th style="text-align: right;">數量小計</th></tr></thead><tbody>';
+
+            const sortedKeys = Object.keys(summaryData).sort();
+            let grandTotal = 0;
+
+            sortedKeys.forEach(key => {
+                const keyParts = key.split(' | ');
+                const total = summaryData[key];
+                grandTotal += total;
+                
+                html += '<tr>';
+                keyParts.forEach(part => {
+                     html += `<td>${part}</td>`;
+                });
+                html += `<td class="quantity-total">${total}</td>`;
+                html += '</tr>';
+            });
+            
+            html += '<tr>';
+            html += `<td colspan="${headerLabels.length}" style="text-align: right;" class="grand-total">總計 (Grand Total):</td>`;
+            html += `<td class="quantity-total grand-total">${grandTotal}</td>`;
+            html += '</tr>';
+
+            html += '</tbody></table><br>';
+            return html;
+        }
+
+        /** 載入資料 (如果尚未載入)。*/
+        async function fetchData() {
+            if (allDataRows.length > 0) {
+                return true; 
+            }
+            
+            const loadingMsg = document.getElementById('loading-message');
+            loadingMsg.style.display = 'block';
+
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json(); 
+                
+                if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object' || data[0] === null) {
+                    throw new Error('Apps Script 回傳的資料格式不正確 (非有效的物件陣列)。');
+                }
+
+                allDataRows = data; 
+                loadingMsg.style.display = 'none';
+                return true;
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                document.getElementById('report-container').innerHTML = `<p style="color: red;">載入資料失敗。詳細錯誤: ${error.message}</p>`;
+                loadingMsg.style.display = 'none';
+                return false;
+            }
+        }
+        
+        /** 處理搜尋按鈕點擊事件 */
+        async function handleSearch() {
+            const container = document.getElementById('report-container');
+            const status = document.getElementById('filter-status');
+            
+            // 1. 載入資料 (如果尚未載入)
+            status.innerHTML = '正在檢查/載入資料...';
+            const dataLoaded = await fetchData();
+            if (!dataLoaded) {
+                status.innerHTML = '資料載入失敗，請檢查 Apps Script 部署。';
+                return;
+            }
+            if (allDataRows.length === 0) {
+                 container.innerHTML = '<p>資料庫中沒有記錄。</p>';
+                status.innerHTML = '資料載入成功，但無記錄。';
+                return;
+            }
+
+            // 2. 獲取所有篩選條件
+            const searchProduct = document.getElementById('productSearch').value.trim().toLowerCase();
+            const searchSize = document.getElementById('sizeSearch').value.trim().toLowerCase();
+            const searchColor = document.getElementById('colorSearch').value.trim().toLowerCase();
+
+            // 3. 篩選資料
+            let filteredDataRows = allDataRows.filter(row => {
+                const productName = String(row[KEY_PRODUCT_NAME] || '').toLowerCase();
+                const size = String(row[KEY_SIZE] || '').toLowerCase();
+                const color = String(row[KEY_COLOR] || '').toLowerCase();
+
+                const productMatch = !searchProduct || productName.includes(searchProduct);
+                const sizeMatch = !searchSize || size === searchSize;
+                const colorMatch = !searchColor || color === searchColor;
+
+                return productMatch && sizeMatch && colorMatch;
+            });
+
+            // 4. 更新狀態與生成報表
+            const filtersUsed = [
+                searchProduct && `產品名稱(關鍵字): "${searchProduct}"`,
+                searchSize && `尺寸: "${searchSize}"`,
+                searchColor && `顏色: "${searchColor}"`
+            ].filter(Boolean).join('；') || '無篩選條件';
+            
+            status.innerHTML = `篩選條件: ${filtersUsed} | 找到 **${filteredDataRows.length}** 筆記錄。`;
+
+            if (filteredDataRows.length === 0) {
+                 container.innerHTML = `<h2>無結果</h2><p style="color: #dc3545;">找不到符合您條件的記錄。</p>`;
+                 return;
+            }
+
+            // 5. 生成四種小計報表
+            let reportHTML = '';
+
+            // 1. 同個產品數量的小計
+            reportHTML += createReportTable(
+                '1. 同個產品數量的小計 (按產品名稱)', 
+                aggregateData(filteredDataRows, [KEY_PRODUCT_NAME]), 
+                [KEY_PRODUCT_NAME]
+            );
+
+            // 2. 同個產品同樣顏色的小計
+            reportHTML += createReportTable(
+                '2. 同個產品同樣顏色的小計 (按產品名稱, 顏色)', 
+                aggregateData(filteredDataRows, [KEY_PRODUCT_NAME, KEY_COLOR]), 
+                [KEY_PRODUCT_NAME, KEY_COLOR]
+            );
+
+            // 3. 同個產品同樣尺寸的小計
+            reportHTML += createReportTable(
+                '3. 同個產品同樣尺寸的小計 (按產品名稱, 尺寸)', 
+                aggregateData(filteredDataRows, [KEY_PRODUCT_NAME, KEY_SIZE]), 
+                [KEY_PRODUCT_NAME, KEY_SIZE]
+            );
+
+            // 4. 同個產品同樣尺寸及顏色的小計
+            reportHTML += createReportTable(
+                '4. 同個產品同樣尺寸及顏色的小計 (按產品名稱, 尺寸, 顏色)', 
+                aggregateData(filteredDataRows, [KEY_PRODUCT_NAME, KEY_SIZE, KEY_COLOR]), 
+                [KEY_PRODUCT_NAME, KEY_SIZE, KEY_COLOR]
+            );
+
+            container.innerHTML = reportHTML;
+        }
+
+        /** 列印功能 */
+        function printReport() {
+            // window.print() 呼叫系統列印對話框，適用於所有瀏覽器/裝置
+            window.print();
+        }
+    </script>
+</body>
+</html>
