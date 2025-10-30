@@ -311,7 +311,7 @@
             z-index: 999;
         }
 
-        /* --- 浮動側邊欄樣式 (修正邊框尺寸以容納徽章) --- */
+        /* --- 浮動側邊欄樣式 --- */
         #float-actions {
             position: fixed;
             top: 20px; /* 距離頂部 */
@@ -807,7 +807,9 @@
             }
 
             main {
+                /* 縮小主內容區左右邊距 */
                 margin-top: 10px;
+                padding: 0 8px 50px 8px; /* 左右邊距從 15px 縮小到 8px */
             }
 
             .list-filter-bar {
@@ -827,7 +829,14 @@
             }
 
             #product-list {
+                /* 縮小卡片間距 */
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 10px; /* 網格間距從 20px 縮小到 10px */
+            }
+
+            .product-card {
+                /* 縮小卡片內部邊距 */
+                padding: 10px; /* 卡片內部邊距從 15px 縮小到 10px */
             }
 
             .product-info h2 {
