@@ -831,16 +831,18 @@
 
             #product-list {
                 /* 瀑布流佈局 */
-                display: block; /* 關閉 Grid */
+                display: block; /* 確保 Grid 效果被 Columns 覆蓋 */
                 column-count: 2; /* 兩欄 */
                 column-gap: 10px; /* 欄間距 */
             }
             
             .product-card {
                 /* 瀑布流佈局專用設定 */
-                display: inline-block; /* 允許 card 參與 columns 佈局 */
+                /* 必須確保 display: inline-block 才能正常參與 column 佈局 */
+                display: inline-block; 
                 width: 100%; /* 確保卡片佔滿欄寬 */
                 margin-bottom: 10px; /* 卡片間的垂直間距 */
+                -webkit-column-break-inside: avoid; /* 瀏覽器兼容性 */
                 break-inside: avoid-column; /* 防止卡片被切斷 */
                 
                 /* 縮小卡片內部邊距 */
