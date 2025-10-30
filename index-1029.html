@@ -311,7 +311,7 @@
             z-index: 999;
         }
 
-        /* --- 浮動側邊欄樣式 --- */
+        /* --- 浮動側邊欄樣式 (修正邊框尺寸以容納徽章) --- */
         #float-actions {
             position: fixed;
             top: 20px; /* 距離頂部 */
@@ -829,8 +829,8 @@
             }
 
             #product-list {
-                /* 縮小卡片間距 */
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                /* 修正：強制兩欄顯示並縮小間距 */
+                grid-template-columns: 1fr 1fr; /* 確保兩欄平均分配 */
                 gap: 10px; /* 網格間距從 20px 縮小到 10px */
             }
 
