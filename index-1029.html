@@ -165,6 +165,7 @@
         }
 
         #product-list {
+            /* 桌面版：Grid佈局 */
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 20px;
@@ -829,14 +830,21 @@
             }
 
             #product-list {
-                /* 修正：強制兩欄顯示並縮小間距 */
-                grid-template-columns: 1fr 1fr; /* 確保兩欄平均分配 */
-                gap: 10px; /* 網格間距從 20px 縮小到 10px */
+                /* 瀑布流佈局 */
+                display: block; /* 關閉 Grid */
+                column-count: 2; /* 兩欄 */
+                column-gap: 10px; /* 欄間距 */
             }
-
+            
             .product-card {
+                /* 瀑布流佈局專用設定 */
+                display: inline-block; /* 允許 card 參與 columns 佈局 */
+                width: 100%; /* 確保卡片佔滿欄寬 */
+                margin-bottom: 10px; /* 卡片間的垂直間距 */
+                break-inside: avoid-column; /* 防止卡片被切斷 */
+                
                 /* 縮小卡片內部邊距 */
-                padding: 10px; /* 卡片內部邊距從 15px 縮小到 10px */
+                padding: 10px; 
             }
 
             .product-info h2 {
