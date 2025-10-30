@@ -105,66 +105,6 @@
             line-height: 1.6;
         }
 
-        .header-actions {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 8px;
-            min-width: max-content;
-        }
-
-        .top-action-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        #external-link-btn {
-            background-color: var(--button-bg);
-            color: var(--button-text);
-            border: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 6px 10px;
-            border-radius: 4px;
-            line-height: 1.2;
-            cursor: pointer;
-        }
-
-        #cart-btn {
-            background-color: var(--button-bg);
-            color: var(--button-text);
-            border: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 6px 10px;
-            border-radius: 4px;
-            line-height: 1.2;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        #cart-count {
-            background-color: #fff;
-            color: #000;
-            font-size: 0.7rem;
-            font-weight: 600;
-            min-width: 18px;
-            height: 18px;
-            line-height: 18px;
-            text-align: center;
-            border-radius: 9px;
-            padding: 0 5px;
-        }
-
-        .status-row {
-            font-size: 0.8rem;
-            color: var(--subtle-text-color);
-            line-height: 1.4;
-            text-align: right;
-        }
-
         main {
             max-width: 1200px;
             margin: 15px auto 80px auto;
@@ -279,15 +219,15 @@
 
         .product-info h2 {
             font-family: var(--primary-font);
-            margin-top: 0;
-            color: #1a1a1a;
             font-size: 1.5rem;
             margin-bottom: 5px;
+            margin-top: 0;
+            color: #1a1a1a;
         }
 
         .product-info p {
-            margin: 5px 0;
             line-height: 1.6;
+            margin: 5px 0;
         }
         
         .product-info .price {
@@ -304,31 +244,31 @@
         }
 
         .spec-selector {
+            border-top: 1px solid var(--border-color);
             margin: 15px 0;
             padding-top: 15px;
-            border-top: 1px solid var(--border-color);
         }
 
         .spec-selector label {
             display: inline-block;
-            margin-right: 5px;
             font-size: 0.9rem;
             font-weight: 500;
+            margin-right: 5px;
         }
 
         .spec-selector select,
         .spec-selector input[type="number"] {
-            padding: 5px 8px;
-            border-radius: 4px;
             border: 1px solid var(--border-color);
+            border-radius: 4px;
             font-size: 0.9rem;
             margin-right: 8px;
             min-width: 60px;
+            padding: 5px 8px;
         }
 
         .spec-selector .stock-info {
-            font-size: 0.85rem;
             color: var(--subtle-text-color);
+            font-size: 0.85rem;
             margin: 8px 0;
         }
 
@@ -339,13 +279,13 @@
 
         .spec-selector .add-to-cart-btn {
             background-color: var(--button-bg);
-            color: var(--button-text);
             border: none;
             border-radius: 4px;
-            padding: 8px 10px;
-            font-size: 0.9rem;
+            color: var(--button-text);
             cursor: pointer;
+            font-size: 0.9rem;
             margin-top: 10px;
+            padding: 8px 10px;
         }
 
         .spec-selector .add-to-cart-btn[disabled] {
@@ -354,24 +294,133 @@
         }
 
         .to-top-btn {
-            position: fixed;
-            bottom: 70px;
-            right: 15px;
             background-color: var(--float-btn-bg);
-            color: var(--float-btn-text);
-            width: 40px;
-            height: 40px;
-            border-radius: 20px;
             border: none;
-            font-size: 1.2rem;
-            line-height: 40px;
-            text-align: center;
+            border-radius: 20px;
+            bottom: 70px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            color: var(--float-btn-text);
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            font-size: 1.2rem;
+            height: 40px;
+            line-height: 40px;
+            position: fixed;
+            right: 15px;
+            text-align: center;
+            width: 40px;
             z-index: 999;
         }
 
-        /* --- Cart Drawer --- */
+        /* --- 浮動側邊欄樣式 (修正邊框尺寸以容納徽章) --- */
+        #float-actions {
+            position: fixed;
+            top: 20px; /* 距離頂部 */
+            right: 0;
+            z-index: 1010; /* 高於 header */
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .float-action-item {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; 
+            background-color: transparent; 
+            border: 1px solid var(--border-color); 
+            color: var(--button-bg); 
+            padding: 6px; 
+            border-radius: 4px 0 0 4px; 
+            font-size: 0.9rem;
+            font-weight: 500;
+            line-height: 1.2;
+            cursor: pointer;
+            text-decoration: none;
+            overflow: hidden;
+            position: relative; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+
+            /* 統一初始尺寸：44px x 44px */
+            width: 44px; 
+            height: 44px;
+            
+            background-color: #fff; 
+            
+            transition: width 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* 懸停時：寬度增加，保持徽章空間 */
+        .float-action-item:hover {
+            width: 134px; /* 保持展開後寬度 (130px + 4px 增量) */
+            background-color: var(--button-bg); 
+            color: var(--button-text); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .float-action-item i {
+            /* 圖示尺寸維持原始 1.2rem */
+            font-size: 1.2rem; 
+            position: absolute; 
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--button-bg); 
+            transition: color 0.3s ease;
+        }
+        
+        /* 懸停時，圖示顏色變為白色 */
+        .float-action-item:hover i {
+            color: var(--button-text);
+        }
+
+        /* 文字內容 */
+        .float-action-item .button-text {
+            white-space: nowrap;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none; 
+            transition: opacity 0.3s ease;
+            text-align: left;
+            padding-left: 8px; 
+            flex-grow: 1;
+        }
+        
+        /* 懸停時，文字顯示出來 */
+        .float-action-item:hover .button-text {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* --- 購物車數量徽章調整 (確保不被遮擋) --- */
+        #float-cart-count {
+            /* 初始位置：保持在未展開按鈕的右上角 (top:-5px; right:-5px) */
+            position: absolute;
+            top: -5px;
+            right: -5px; 
+            
+            background-color: #e60012; 
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            line-height: 18px;
+            text-align: center;
+            border-radius: 9px;
+            padding: 0 5px;
+            z-index: 10;
+            
+            transition: right 0.3s ease, top 0.3s ease;
+        }
+        
+        /* 懸停時：將徽章位置移到展開後按鈕的新右上角邊緣 (維持 top/right: 4px 的視覺邊距) */
+        .float-action-item:hover #float-cart-count {
+            right: 4px; /* 貼合展開後的右邊框 */
+            top: 4px;   /* 貼合展開後的上邊框 */
+        }
+
+
+        /* --- Cart Drawer --- (以下保持不變) */
         #cart-overlay {
             position: fixed;
             inset: 0;
@@ -434,13 +483,13 @@
         }
 
         #cart-count-inline {
-            background-color:#000;
-            color:#fff;
-            font-size:0.8rem;
-            font-weight:600;
-            padding:2px 6px;
-            border-radius:4px;
-            line-height:1.2;
+            background-color: #000;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            line-height: 1.2;
         }
 
         #cart-sub {
@@ -560,7 +609,6 @@
             cursor: pointer;
             font-weight: 600;
         }
-
         /* --- Checkout Overlay (問卷收件資訊) --- */
         #checkout-overlay {
             position: fixed;
@@ -678,6 +726,11 @@
             font-weight: 600;
         }
 
+        #submit-order-btn[disabled] {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
         #close-checkout-btn {
             background: none;
             border: none;
@@ -735,20 +788,22 @@
             #header-container {
                 flex-direction: column;
                 align-items: stretch;
-                gap: 12px;
+                gap: 8px; 
             }
 
             .header-left {
-                order: 2;
+                order: 1; 
             }
 
             .header-actions {
-                order: 1;
-                align-items: flex-start;
+                display: none; 
             }
 
             .status-row {
                 text-align: left;
+                font-size: 0.75rem; 
+                line-height: 1.2;
+                display: flex;
             }
 
             main {
@@ -756,14 +811,14 @@
             }
 
             .list-filter-bar {
-                flex-direction: column;
                 align-items: flex-start;
+                flex-direction: column;
             }
 
             .filter-group {
-                width: 100%;
                 flex-wrap: nowrap;
                 justify-content: space-between;
+                width: 100%;
             }
 
             .filter-group select,
@@ -780,78 +835,56 @@
             }
 
             .spec-selector .add-to-cart-btn {
-                width: 100%;
                 text-align: center;
-            }
-
-            #header-container {
-                flex-direction: row;
-                align-items: center;
-                margin-bottom: 10px;
-            }
-            
-            #external-link-btn {
-                margin-right: 5px;
-                padding: 5px;
+                width: 100%;
             }
 
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem; 
                 margin-bottom: 0;
             }
 
             .desc-row {
                 font-size: 0.8rem;
             }
-
-            #cart-btn {
-                font-size: 0.8rem;
-                padding: 5px 8px;
-            }
-
-            #cart-count {
-                font-size: 0.7rem;
-            }
         }
     </style>
 </head>
 <body>
 
+<div id="float-actions">
+    <button id="cart-float-btn" class="float-action-item">
+        <span class="button-text">購物車</span>
+        <i class="fa-solid fa-cart-shopping"></i> 
+        <span id="float-cart-count">0</span>
+    </button>
+    
+    <a id="line-btn" class="float-action-item" href="https://lin.ee/E6oixVD" target="_blank">
+        <span class="button-text">LINE@客服</span>
+        <i class="fa-brands fa-line"></i> 
+    </a>
+</div>
+
 <header>
     <div id="header-container">
         <div class="header-left">
             <div class="title-row">
-                <h1>年終現貨清倉特賣</h1>
+                <h1>年終現貨清倉</h1>
                 <span class="free-ship-badge">滿 1000 / 2000 享免運🔥</span>
             </div>
             <div class="desc-row">
-                現貨售完不補，喜歡就先下單卡貨！
-                <br>
-                （請用 LINE@ 客服結單，下單流程請往下看🙏）
+                ⚠️ 現貨售完不補！請先下單，並用 LINE@ 客服結單。
             </div>
         </div>
 
-        <div class="header-actions">
-            <div class="top-action-row">
-                <button id="external-link-btn">
-                    <i class="fa-brands fa-line"></i> LINE@客服
-                </button>
-                <button id="cart-btn">
-                    <i class="fa-solid fa-cart-shopping"></i> 購物車
-                    <span id="cart-count">0</span>
-                </button>
-            </div>
-            <div class="status-row">
-                <div>庫存皆為「最後現貨」</div>
-                <div>📦 全家店到店、宅配、面交</div>
-            </div>
+        <div class="status-row">
+            <div>最後現貨 📦 全家/宅配/面交</div>
         </div>
     </div>
 </header>
 
 <main>
 
-    <!-- 篩選列 -->
     <div class="list-filter-bar">
         <div class="filter-group">
             <label for="category-filter">分類</label>
@@ -877,18 +910,14 @@
         <button class="clear-filters-btn" id="clear-filters-btn">清除篩選</button>
     </div>
 
-    <!-- 商品清單 -->
     <div id="product-list">
-        <!-- 動態生成 -->
-    </div>
+        </div>
 </main>
 
-<!-- 浮動回頂部按鈕 -->
 <button class="to-top-btn" id="to-top-btn" title="回頂部">
     <i class="fa-solid fa-arrow-up"></i>
 </button>
 
-<!-- 購物車 Overlay -->
 <div id="cart-overlay"></div>
 <div id="cart-drawer">
     <div id="cart-header">
@@ -936,7 +965,6 @@
     </div>
 </div>
 
-<!-- Checkout Overlay (填寫收件資訊) -->
 <div id="checkout-overlay"></div>
 <div id="checkout-modal">
     <div id="checkout-header">
@@ -998,7 +1026,8 @@
 <script>
 (function() {
     // ========== 常數設定 ==========
-    const apiUrl = "https://script.google.com/macros/s/AKfycbzco3oEMAXdl8w4PfhNj9KA1pzLKOkw3uLxTN9tkqlZfm4PV14gHMJ55rppw9jBWoQU/exec";
+    // 🚨 這是您指定的部署網址 🚨
+    const apiUrl = "https://script.google.com/macros/s/AKfycbz_Fp1fKjKOpbgfPlmZNKWXEG16-ZjquU48PXkNYKVDByfDXZpBLqjLsuTQPw_0_yJz/exec";
 
     // 🚚 新物流規則
     const COST_CVS = 60;           // 全家店到店基本運費
@@ -1019,8 +1048,10 @@
 
     const toTopBtn = document.getElementById('to-top-btn');
 
-    const cartBtn = document.getElementById('cart-btn');
-    const cartCount = document.getElementById('cart-count');
+    // 修正 DOM 變數指向新的浮動按鈕 ID
+    const cartBtn = document.getElementById('cart-float-btn'); 
+    const cartCount = document.getElementById('float-cart-count'); 
+
     const cartCountInline = document.getElementById('cart-count-inline');
     const cartOverlay = document.getElementById('cart-overlay');
     const cartDrawer = document.getElementById('cart-drawer');
@@ -1111,16 +1142,24 @@
 
         extraHintsDiv.style.display = 'none';
         extraHintsDiv.innerHTML = '';
+        
+        // 確保重新開啟時，運費 summary 使用上次的選擇
+        currentShippingModeForSummary = shippingMethodSelect.value;
+        renderCart(); 
     }
 
     function closeCheckout() {
         checkoutOverlay.style.display = 'none';
         checkoutModal.style.display = 'none';
+        // 可選：重置表單和提示訊息
+        checkoutForm.reset();
+        shippingMethodSelect.dispatchEvent(new Event('change'));
     }
 
     function getCartSubtotal() {
         return cart.reduce((sum, item) => {
-            const unitPrice = parseInt(String(item.price).replace(/\D/g, '')) || 0;
+            // 移除價格中的非數字字元 (例如 'NT$' 或空格)
+            const unitPrice = parseInt(String(item.price).replace(/\D/g, '')) || 0; 
             return sum + unitPrice * item.qty;
         }, 0);
     }
@@ -1180,6 +1219,7 @@
             subtotal,
             shippingCost: shippingCostDisplay,
             total,
+            costRaw: cost, // 新增：傳回原始運費金額
             note
         };
     }
@@ -1187,7 +1227,9 @@
     function renderCart() {
         // 更新購物車數量
         const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-        cartCount.textContent = totalQty;
+        
+        // 更新浮動按鈕和購物車抽屜內的數量
+        cartCount.textContent = totalQty; 
         cartCountInline.textContent = totalQty + ' 件';
 
         // 清單
@@ -1297,102 +1339,105 @@
         const finalShip = (cost === 0 ? '免運' : (cost == null ? '尚未選擇' : `NT$${cost}`));
         const finalTotal = (cost == null ? sub : sub + cost);
 
-        lines.push(`訂單小計: NT$ ${sub}`);
+        lines.push(`-- 訂單總結 --`);
+        lines.push(`商品小計: NT$ ${sub}`);
         lines.push(`運費: ${finalShip}`);
         lines.push(`總付款金額: NT$ ${finalTotal}`);
 
         return lines.join('\n');
     }
 
-    function submitOrder() {
+    // ⬇️⬇️⬇️ 提交訂單核心函式 ⬇️⬇️⬇️
+    async function submitOrder() {
+        // 1. 基本驗證
         const contactVal = document.getElementById('contact').value.trim();
         const recipientNameVal = document.getElementById('recipient-name').value.trim();
-        const shippingMethodVal = document.getElementById('shipping-method').value;
+        const shippingMethodKey = document.getElementById('shipping-method').value;
         const storeVal = document.getElementById('recipient-store').value.trim();
         const addressVal = document.getElementById('recipient-address').value.trim();
         const noteVal = document.getElementById('extra-note').value.trim();
 
-        if (!contactVal) {
-            alert('請填寫 LINE ID 或電話，讓我們可以聯繫你');
-            return;
-        }
-        if (!recipientNameVal) {
-            alert('請填寫收件人姓名');
-            return;
-        }
-        if (!shippingMethodVal) {
-            alert('請選擇配送方式');
-            return;
+        if (!contactVal || !recipientNameVal || !shippingMethodKey) {
+             alert('請填寫完整必填資訊！');
+             return;
         }
 
         // 超商收貨都需要門市
-        if ((shippingMethodVal === 'cvs_cod' || shippingMethodVal === 'cvs_payfirst') && !storeVal) {
-            alert('請提供全家門市名稱/店號喔（我們才能幫你寄出）');
-            return;
+        if ((shippingMethodKey === 'cvs_cod' || shippingMethodKey === 'cvs_payfirst') && !storeVal) {
+             alert('請提供全家門市名稱/店號喔（我們才能幫你寄出）');
+             return;
         }
 
         // 宅配 / 面交 要地址或面交地點
-        if ((shippingMethodVal === 'home_delivery' || shippingMethodVal === 'self_pickup') && !addressVal) {
-            alert('請填寫宅配地址或面交希望地點/時段');
-            return;
+        if ((shippingMethodKey === 'home_delivery' || shippingMethodKey === 'self_pickup') && !addressVal) {
+             alert('請填寫宅配地址或面交希望地點/時段');
+             return;
         }
+        
+        // 2. 準備提交的資料
+        const orderSummaryText = buildCheckoutSummaryText();
+        const {total} = calculateCartSummary(); // 取得最終總金額
+        const shippingMethodText = shippingMethodSelect.options[shippingMethodSelect.selectedIndex].text;
+        
+        const payload = {
+            contact: contactVal,
+            recipientName: recipientNameVal,
+            shippingMethod: shippingMethodText, // 傳送顯示名稱
+            totalAmount: `NT$${total}`,
+            store: storeVal,
+            address: addressVal,
+            note: noteVal,
+            // 讓 Apps Script 記錄更詳細的訂單資訊
+            orderSummary: orderSummaryText, 
+            cartItems: cart, // 傳送完整的購物車陣列
+        };
 
-        // 把目前選擇記錄起來，讓購物車運費顯示正確
-        currentShippingModeForSummary = shippingMethodVal;
-        renderCart();
+        // 3. 禁用按鈕，防止重複提交
+        submitOrderBtn.disabled = true;
+        submitOrderBtn.textContent = '訂單處理中...';
+        
+        // 4. 發送 POST 請求到 Apps Script
+        try {
+            // 修正 CORS 政策的關鍵：將 Content-Type 設為 text/plain (瀏覽器會視為簡單請求，不觸發 Preflight)
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain' 
+                },
+                body: JSON.stringify(payload) // 數據仍以 JSON 字串格式傳輸
+            });
 
-        const orderSummary = buildCheckoutSummaryText();
+            const result = await response.json();
 
-        // 動態產生「方案文字」
-        let shippingPlanText = "";
-        if (shippingMethodVal === 'cvs_payfirst') {
-            shippingPlanText = "匯款 + 全家店到店 (滿 NT$1000 免運)";
-        } else if (shippingMethodVal === 'cvs_cod') {
-            shippingPlanText = "超商取貨付款 + 全家店到店 (滿 NT$2000 免運)";
-        } else if (shippingMethodVal === 'home_delivery') {
-            shippingPlanText = "宅配到府 (運費一律 NT$145)";
-        } else if (shippingMethodVal === 'self_pickup') {
-            shippingPlanText = "面交自取 (台北市)";
+            if (result.status === "success") {
+                // 5. 成功後的處理
+                const finalMsg =`🎉 訂單需求已成功送出並同步到後台！\n\n【訂單確認與付款說明】\n\n請依照以下步驟完成您的訂單，我們會在收到款項後盡快為您出貨。\n您選擇的方案: ${shippingMethodText}\n\n${orderSummaryText}\n\n請到 LINE@ 提供收件資訊：(掃描QR或加入 LINE ID: @318latbk)\n需要提供：\n✅ 訂單明細截圖（包含總金額與運送方式）\n✅ 收件人姓名\n✅ 聯絡電話\n${(shippingMethodKey === 'home_delivery' || shippingMethodKey === 'self_pickup') ? "✅ 收件地址 / 面交地點時段" : "✅ 全家門市名稱/店號"}\n${noteVal ? "✅ 備註：" + noteVal : ""}\n\n— 付款帳戶 (匯款適用) —\n銀行名稱: 王道銀行 (銀行代碼: 048)\n銀行帳號: 01000191591188\n\n提醒：匯款完成後，請在 LINE 告知「帳號後五碼」或上傳匯款證明，我們就會核對並排件。`;
+                
+                alert(finalMsg);
+
+                // 6. 清空購物車 & 關閉視窗
+                cart = [];
+                saveCartToStorage();
+                clearCartStorage();
+                renderCart();
+                closeCheckout();
+                closeCart();
+
+            } else {
+                alert('訂單送出失敗，請截圖此訊息給客服：' + result.message);
+            }
+
+        } catch (error) {
+            console.error('API 呼叫失敗:', error);
+            alert('網路連線錯誤或後台服務無法連接，請稍後再試。錯誤細節已記錄到 Console。');
+        } finally {
+            // 7. 恢復按鈕狀態
+            submitOrderBtn.disabled = false;
+            submitOrderBtn.textContent = '送出訂單需求';
         }
-
-        // 預組客服訊息（含銀行 / LINE@ 說明）
-        const finalMsg =
-`【訂單確認與付款說明】
-
-請依照以下步驟完成您的訂單，我們會在收到款項後盡快為您出貨。
-
-您選擇的方案: ${shippingPlanText}
-
-${orderSummary}
-
-請到 LINE@ 提供收件資訊：
-(掃描QR或加入 LINE ID: @318latbk)
-
-需要提供：
-✅ 訂單明細截圖（包含總金額與運送方式）
-✅ 收件人姓名
-✅ 聯絡電話
-${(shippingMethodVal === 'home_delivery' || shippingMethodVal === 'self_pickup')
-    ? "✅ 收件地址 / 面交地點時段"
-    : "✅ 全家門市名稱/店號"}
-${noteVal ? "✅ 備註：" + noteVal : ""}
-
-— 付款帳戶 (匯款適用) —
-銀行名稱: 王道銀行 (銀行代碼: 048)
-銀行帳號: 01000191591188
-
-提醒：匯款完成後，請在 LINE 告知「帳號後五碼」或上傳匯款證明，我們就會核對並排件。`;
-
-        alert(finalMsg);
-
-        // ✅ 送出後才清空購物車 & localStorage
-        cart = [];
-        saveCartToStorage(); // 現在 cart 是空陣列
-        clearCartStorage();
-        renderCart();
-        closeCheckout();
-        closeCart();
     }
+    // ⬆️⬆️⬆️ 提交訂單核心函式結束 ⬆️⬆⬆
+
 
     function handleShippingChange() {
         const method = shippingMethodSelect.value;
@@ -1822,7 +1867,9 @@ ${noteVal ? "✅ 備註：" + noteVal : ""}
     // ========== 事件綁定 ==========
     toTopBtn.addEventListener('click', scrollToTop);
 
-    cartBtn.addEventListener('click', openCart);
+    // 綁定事件到新的浮動購物車按鈕
+    cartBtn.addEventListener('click', openCart); 
+    
     cartCloseBtn.addEventListener('click', closeCart);
     cartOverlay.addEventListener('click', closeCart);
 
@@ -1830,8 +1877,9 @@ ${noteVal ? "✅ 備註：" + noteVal : ""}
     closeCheckoutBtn.addEventListener('click', closeCheckout);
     checkoutOverlay.addEventListener('click', closeCheckout);
 
+    // 關鍵修正：將 submitOrderBtn 的事件處理器改為使用 async/await 且不阻止表單預設行為 
     submitOrderBtn.addEventListener('click', (e) => {
-        e.preventDefault();
+        e.preventDefault(); // 阻止表單的預設提交行為
         submitOrder();
     });
 
@@ -1866,6 +1914,9 @@ ${noteVal ? "✅ 備註：" + noteVal : ""}
     // 先載入購物車，確保畫面一開始就反映 localStorage
     cart = loadCartFromStorage();
     renderCart();
+    
+    // 網頁載入時強制觸發一次運費變動，確保免運提示等正確顯示
+    shippingMethodSelect.dispatchEvent(new Event('change'));
 
     fetch(apiUrl)
         .then(response => response.json())
@@ -1944,6 +1995,15 @@ ${noteVal ? "✅ 備註：" + noteVal : ""}
             console.error('資料載入失敗', err);
             productListDiv.innerHTML = '<p>資料載入失敗，請稍後再試。</p>';
         });
+    
+    // 網頁載入完成後檢查是否需要顯示回頂部按鈕
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 200) {
+            toTopBtn.style.display = 'block';
+        } else {
+            toTopBtn.style.display = 'none';
+        }
+    });
 
 })();
 </script>
