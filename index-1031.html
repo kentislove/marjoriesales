@@ -833,7 +833,7 @@
             }
 
             /* ---------------------------------------------------- */
-            /* 修正 Safari 瀑布流留白問題：改用 CSS Grid 佈局 */
+            /* 修正 Safari Grid 留白問題：強制 Grid 項目頂部對齊 */
             /* ---------------------------------------------------- */
             #product-list {
                 /* 替換原本的 column-count 佈局 */
@@ -847,23 +847,27 @@
                 /* 移除 column-count 相關設定 */
                 column-count: unset;
                 column-gap: unset;
+
+                /* 關鍵修正：讓所有 Grid 項目對齊到頂部，不強制拉伸到行高 */
+                align-items: start; 
             }
             
             .product-card {
-                /* 移除瀑布流專用屬性，讓 Grid 負責佈局 */
                 display: flex; 
                 flex-direction: column;
-                width: auto; /* 讓 Grid 控制寬度 */
-                margin-bottom: 0; /* 移除垂直間距，改用 row-gap 控制 */
+                width: auto; 
+                margin-bottom: 0; 
                 -webkit-column-break-inside: auto; 
                 break-inside: auto; 
-                
-                /* 保留縮小卡片內部邊距 */
                 padding: 10px; 
+
+                /* 覆寫桌面端的 min-height: 100% 確保內容不會被不必要的空間推開 */
+                min-height: unset; 
             }
             /* ---------------------------------------------------- */
             /* 修正結束 */
             /* ---------------------------------------------------- */
+
 
             .product-info h2 {
                 font-size: 1.2rem;
