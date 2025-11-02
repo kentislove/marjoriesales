@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>純條碼掃描器</title>
+    <script src="https://unpkg.com/@zxing/library@latest"></script> 
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        input[type="file"] { display: none; }
+        .upload-btn {
+            background-color: #28a745; /* 綠色按鈕 */
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        #preview-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+            margin-top: 20px; 
+            justify-content: center;
+        }
+        .preview-item { margin: 5px; border: 1px solid #ddd; padding: 5px; width: 150px; }
+        .preview-img { max-width: 100%; height: auto; display: block; }
+        .result-box { margin-top: 20px; padding: 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 5px; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📱 條碼數字掃描 (純本地處理)</h2>
+        <p>請點擊下方按鈕，可**一次選取多張**條碼圖片：</p>
+        
+        <label for="imageUpload" class="upload-btn">
+            📸 點擊拍照/選取多張圖片
+        </label>
+        <input type="file" id="imageUpload" accept="image/*" capture="environment" multiple>
+
+        <div id="preview-container">
+            </div>
+
+        <button id="scanButton" onclick="scanAndUploadResults()" style="display:none; margin-top: 20px; padding: 10px 20px;" disabled>
+            💾 寫入 Sheets (<span id="fileCount">0</span> 筆結果)
+        </button>
+        
+        <p id="statusMessage" style="color: blue; margin-top: 15px;">等待上傳...</p>
+
+        <div class="result-box" id="result">
+            <strong>最新結果：</strong><br>
+            <pre id="dataOutput">條碼辨識結果將顯示在此處。</pre>
+        </div>
+    </div>
+
+    <script>
+        // 【❗重要】將步驟 3 複製的 Apps Script URL 貼在這裡
+        const GAS_WEB_APP_URL = "YOUR_DEPLOYED_WEB_APP_URL"; 
+        
+        const imageUpload = document.getElementById('imageUpload');
+        const previewContainer = document.getElementById('preview-container');
+        const scanButton = document.getElementById('scanButton');
+        const fileCountSpan = document.getElementById('fileCount');
+        const statusMessage = document.getElementById('statusMessage');
+        const dataOutput = document.getElementById('dataOutput');
+        
+        // zxing-js 相關設定
+        const codeReader = new ZXing.BrowserMultiFormatReader();
+        let barcodeResults = []; // 儲存所有圖片的條碼結果
+        
+        // 當使用者選取圖片或拍照完成時觸發
+        imageUpload.onchange = async function(event) {
+            const files = Array.from(event.target.files);
+            
+            if (files.length === 0) {
+                statusMessage.textContent = "請至少選取一張圖片。";
+                scanButton.style.display = 'none';
+                return;
+            }
+
+            statusMessage.textContent = `已選取 ${files.length} 張圖片，正在本地辨識條碼...`;
+            scanButton.disabled = true;
+            previewContainer.innerHTML = '';
+            barcodeResults = []; // 清空之前的結果
+
+            // 迴圈處理每張圖片
+            for (const file of files) {
+                const imgElement = await readAndPreviewImage(file);
+                // 進行條碼辨識
+                await decodeBarcode(imgElement, file.name);
+            }
+            
+            // 顯示最終處理狀態
+            if (barcodeResults.length > 0) {
+                statusMessage.textContent = `✅ 本地辨識完成！找到 ${barcodeResults.length} 組條碼結果。`;
+                scanButton.style.display = 'block';
+                scanButton.disabled = false;
+                fileCountSpan.textContent = barcodeResults.length;
+                dataOutput.textContent = JSON.stringify(barcodeResults, null, 2);
+            } else {
+                statusMessage.textContent = "❌ 本地辨識失敗！請重新拍攝清晰圖片。";
+                scanButton.style.display = 'none';
+            }
+        };
+
+        // 讀取圖片並產生預覽圖
+        function readAndPreviewImage(file) {
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'preview-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'preview-img';
+                    itemDiv.appendChild(img);
+                    
+                    const p = document.createElement('p');
+                    p.textContent = '辨識中...';
+                    itemDiv.appendChild(p);
+                    
+                    previewContainer.appendChild(itemDiv);
+                    resolve(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // 使用 zxing 進行條碼辨識
+        async function decodeBarcode(imgElement, fileName) {
+            const resultDisplay = imgElement.nextElementSibling;
+            try {
+                // 使用 zxing 函式庫，對圖片進行條碼掃描
+                const result = await codeReader.decodeFromImage(imgElement);
+                
+                if (result) {
+                    const barcodeData = result.getText();
+                    const barcodeFormat = result.getBarcodeFormat().toString();
+                    
+                    resultDisplay.textContent = `條碼: ${barcodeData} (${barcodeFormat})`;
+                    resultDisplay.style.color = 'green';
+                    
+                    barcodeResults.push({
+                        fileName: fileName,
+                        barcodeData: barcodeData,
+                        barcodeFormat: barcodeFormat
+                    });
+                } else {
+                    resultDisplay.textContent = '未找到條碼';
+                    resultDisplay.style.color = 'red';
+                }
+            } catch (err) {
+                resultDisplay.textContent = `辨識失敗: ${err.message || '未知錯誤'}`;
+                resultDisplay.style.color = 'red';
+                console.error(`Error decoding barcode for ${fileName}:`, err);
+            }
+        }
+
+        // 按下寫入 Sheets 按鈕後執行
+        async function scanAndUploadResults() {
+            if (barcodeResults.length === 0) {
+                statusMessage.textContent = "沒有可寫入的條碼結果。";
+                return;
+            }
+
+            statusMessage.textContent = `正在將 ${barcodeResults.length} 筆結果傳輸到 Google Sheets...`;
+            scanButton.disabled = true;
+
+            try {
+                // 將所有條碼結果打包成一個請求發送
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ results: barcodeResults }) // 傳送條碼結果陣列
+                });
+
+                const text = await response.text();
+                
+                let resultData;
+                try {
+                    resultData = JSON.parse(text); 
+                } catch (e) {
+                    resultData = {
+                        status: 'error', 
+                        message: '回傳非JSON格式，請檢查 Apps Script Log。', 
+                    };
+                }
+
+                if (resultData.status === 'success') {
+                    statusMessage.textContent = `✅ 成功寫入 ${resultData.count} 筆資料到 Google Sheets。`;
+                    dataOutput.textContent = `成功寫入 ${resultData.count} 筆資料。請檢查您的 Google Sheets。`;
+                    
+                    // 清空已處理的結果
+                    barcodeResults = [];
+                    imageUpload.value = null; // 清空 input 讓使用者可以選取新檔案
+                    previewContainer.innerHTML = '';
+                    scanButton.style.display = 'none';
+                    fileCountSpan.textContent = '0';
+
+                } else {
+                    statusMessage.textContent = `❌ 寫入 Sheets 失敗！錯誤訊息：${resultData.message}`;
+                    dataOutput.textContent = JSON.stringify(resultData, null, 2);
+                }
+
+            } catch (error) {
+                statusMessage.textContent = `❌ 連線或處理錯誤: ${error.message}`;
+                dataOutput.textContent = '請檢查您的網路連線或 Apps Script URL 是否正確。';
+            } finally {
+                scanButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
