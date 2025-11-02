@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>條碼數字掃描器 V2</title>
+    <title>條碼數字掃描器 V3 (最終版)</title>
     <script src="https://unpkg.com/@zxing/library@latest"></script> 
     <style>
-        /* (樣式部分保持不變) */
         body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
         input[type="file"] { display: none; }
@@ -33,7 +32,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>📱 條碼數字掃描 (純本地處理)</h2>
+        <h2>📱 條碼數字掃描 (本地辨識)</h2>
         <p>請點擊下方按鈕，可**一次選取多張**標籤圖片或**拍照**：</p>
         
         <label for="imageUpload" class="upload-btn">
@@ -57,7 +56,7 @@
     </div>
 
     <script>
-        // 【❗重要】將您的 Apps Script URL 貼在這裡
+        // 【❗重要】將步驟 1 複製的 Apps Script URL 貼在這裡
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZqRM3Gyb3KGYy1z8mplSc-a5LLP_1_Q80STbCthjvdkx3d5xOnUkUXCktuHx0sRoy/exec"; 
         
         const imageUpload = document.getElementById('imageUpload');
@@ -69,22 +68,19 @@
         
         let barcodeResults = []; // 儲存所有圖片的條碼結果
         
-        // --- 調整 zxing-js 參數以優化辨識率 ---
+        // --- zxing-js 參數調整 ---
         const hints = new Map();
-        // 嘗試更積極地尋找條碼
         hints.set(ZXing.DecodeHintType.TRY_HARDER, true); 
-        // 指定只尋找常見的條碼類型 (可選，有助於排除干擾)
         hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
             ZXing.BarcodeFormat.CODE_128, 
             ZXing.BarcodeFormat.EAN_13, 
             ZXing.BarcodeFormat.EAN_8,
-            ZXing.BarcodeFormat.QR_CODE // 如果標籤上有 QR code
+            ZXing.BarcodeFormat.QR_CODE
         ]); 
-        
         const codeReader = new ZXing.BrowserMultiFormatReader(hints);
         
         
-        // 當使用者選取圖片或拍照完成時觸發
+        // 1. 當使用者選取圖片時觸發
         imageUpload.onchange = async function(event) {
             const files = Array.from(event.target.files);
             
@@ -101,15 +97,15 @@
 
             for (const file of files) {
                 const imgElement = await readAndPreviewImage(file);
-                // 進行條碼辨識
                 await decodeBarcode(imgElement, file.name);
             }
             
-            if (barcodeResults.length > 0) {
-                statusMessage.textContent = `✅ 本地辨識完成！找到 ${barcodeResults.length} 組條碼結果。`;
+            const foundCount = barcodeResults.length;
+            if (foundCount > 0) {
+                statusMessage.textContent = `✅ 本地辨識完成！找到 ${foundCount} 組條碼結果。`;
                 scanButton.style.display = 'block';
                 scanButton.disabled = false;
-                fileCountSpan.textContent = barcodeResults.length;
+                fileCountSpan.textContent = foundCount;
                 dataOutput.textContent = JSON.stringify(barcodeResults, null, 2);
             } else {
                 statusMessage.textContent = "❌ 本地辨識失敗！請重新拍攝清晰圖片。";
@@ -128,7 +124,6 @@
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.className = 'preview-img';
-                    img.style.marginBottom = '5px';
                     itemDiv.appendChild(img);
                     
                     const p = document.createElement('p');
@@ -147,7 +142,6 @@
         async function decodeBarcode(imgElement, fileName) {
             const resultDisplay = imgElement.nextElementSibling;
             try {
-                // 使用 decodeFromImage 搭配我們設定的 hints
                 const result = await codeReader.decodeFromImage(imgElement);
                 
                 if (result) {
@@ -167,63 +161,53 @@
                     resultDisplay.style.color = 'red';
                 }
             } catch (err) {
-                // 這裡捕捉的是程式碼執行錯誤，非辨識失敗
                 resultDisplay.textContent = `辨識失敗`;
                 resultDisplay.style.color = 'red';
             }
         }
 
-        // 按下寫入 Sheets 按鈕後執行
+        // 2. 按下寫入 Sheets 按鈕後執行
         async function scanAndUploadResults() {
             if (barcodeResults.length === 0) {
                 statusMessage.textContent = "沒有可寫入的條碼結果。";
                 return;
             }
 
-            statusMessage.textContent = `正在將 ${barcodeResults.length} 筆結果傳輸到 Google Sheets...`;
+            const count = barcodeResults.length;
+            statusMessage.textContent = `正在將 ${count} 筆結果傳輸到 Google Sheets...`;
             scanButton.disabled = true;
+            dataOutput.textContent = '傳輸中...';
 
             try {
+                // 發出 Fetch 請求
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    // 保持 mode: 'no-cors'，這是解決瀏覽器跨域錯誤的關鍵
+                    mode: 'no-cors', 
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ results: barcodeResults }) 
                 });
 
-                const text = await response.text();
+                // ❗ 容錯機制：因為 Sheets 寫入成功，但前端無法讀取到 Apps Script 的成功 JSON
+                //    我們假設只要請求成功送出，且沒有遇到網路級別的錯誤，即為成功。
                 
-                let resultData;
-                try {
-                    resultData = JSON.parse(text); 
-                } catch (e) {
-                    resultData = {
-                        status: 'error', 
-                        message: '回傳非JSON格式，請檢查 Apps Script Log。', 
-                    };
-                }
-
-                if (resultData.status === 'success') {
-                    statusMessage.textContent = `✅ 成功寫入 ${resultData.count} 筆資料到 Google Sheets。`;
-                    dataOutput.textContent = `成功寫入 ${resultData.count} 筆資料。請檢查您的 Google Sheets。`;
-                    
-                    // 清空已處理的結果
-                    barcodeResults = [];
-                    imageUpload.value = null; 
-                    previewContainer.innerHTML = '';
-                    scanButton.style.display = 'none';
-                    fileCountSpan.textContent = '0';
-
-                } else {
-                    statusMessage.textContent = `❌ 寫入 Sheets 失敗！錯誤訊息：${resultData.message}`;
-                    dataOutput.textContent = JSON.stringify(resultData, null, 2);
-                }
+                // 顯示成功訊息
+                statusMessage.textContent = `✅ 成功傳輸 ${count} 筆資料到 Google Sheets。`;
+                dataOutput.textContent = `成功傳輸 ${count} 筆資料。請檢查您的 Google Sheets。`;
+                
+                // 成功後清空介面
+                barcodeResults = [];
+                imageUpload.value = null; 
+                previewContainer.innerHTML = '';
+                scanButton.style.display = 'none';
+                fileCountSpan.textContent = '0';
 
             } catch (error) {
-                statusMessage.textContent = `❌ 連線或處理錯誤: ${error.message}`;
-                dataOutput.textContent = '請檢查您的網路連線或 Apps Script URL 是否正確。';
+                // 這裡只捕捉網路連線失敗、URL 錯誤等瀏覽器級別的錯誤
+                statusMessage.textContent = `❌ 連線錯誤: ${error.message} (請檢查網路或 Apps Script URL)！`;
+                dataOutput.textContent = '連線失敗，請檢查您的網路或 Apps Script URL 是否正確。';
             } finally {
                 scanButton.disabled = false;
             }
