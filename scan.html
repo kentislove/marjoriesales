@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>純條碼掃描器</title>
+    <title>條碼數字掃描器 V2</title>
     <script src="https://unpkg.com/@zxing/library@latest"></script> 
     <style>
+        /* (樣式部分保持不變) */
         body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
         input[type="file"] { display: none; }
         .upload-btn {
-            background-color: #28a745; /* 綠色按鈕 */
+            background-color: #28a745; 
             color: white;
             padding: 15px 25px;
             border-radius: 5px;
@@ -33,12 +34,12 @@
 <body>
     <div class="container">
         <h2>📱 條碼數字掃描 (純本地處理)</h2>
-        <p>請點擊下方按鈕，可**一次選取多張**條碼圖片：</p>
+        <p>請點擊下方按鈕，可**一次選取多張**標籤圖片或**拍照**：</p>
         
         <label for="imageUpload" class="upload-btn">
             📸 點擊拍照/選取多張圖片
         </label>
-        <input type="file" id="imageUpload" accept="image/*" capture="environment" multiple>
+        <input type="file" id="imageUpload" accept="image/*" multiple>
 
         <div id="preview-container">
             </div>
@@ -56,7 +57,7 @@
     </div>
 
     <script>
-        // 【❗重要】將步驟 3 複製的 Apps Script URL 貼在這裡
+        // 【❗重要】將您的 Apps Script URL 貼在這裡
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZqRM3Gyb3KGYy1z8mplSc-a5LLP_1_Q80STbCthjvdkx3d5xOnUkUXCktuHx0sRoy/exec"; 
         
         const imageUpload = document.getElementById('imageUpload');
@@ -66,9 +67,22 @@
         const statusMessage = document.getElementById('statusMessage');
         const dataOutput = document.getElementById('dataOutput');
         
-        // zxing-js 相關設定
-        const codeReader = new ZXing.BrowserMultiFormatReader();
         let barcodeResults = []; // 儲存所有圖片的條碼結果
+        
+        // --- 調整 zxing-js 參數以優化辨識率 ---
+        const hints = new Map();
+        // 嘗試更積極地尋找條碼
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true); 
+        // 指定只尋找常見的條碼類型 (可選，有助於排除干擾)
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+            ZXing.BarcodeFormat.CODE_128, 
+            ZXing.BarcodeFormat.EAN_13, 
+            ZXing.BarcodeFormat.EAN_8,
+            ZXing.BarcodeFormat.QR_CODE // 如果標籤上有 QR code
+        ]); 
+        
+        const codeReader = new ZXing.BrowserMultiFormatReader(hints);
+        
         
         // 當使用者選取圖片或拍照完成時觸發
         imageUpload.onchange = async function(event) {
@@ -83,16 +97,14 @@
             statusMessage.textContent = `已選取 ${files.length} 張圖片，正在本地辨識條碼...`;
             scanButton.disabled = true;
             previewContainer.innerHTML = '';
-            barcodeResults = []; // 清空之前的結果
+            barcodeResults = []; 
 
-            // 迴圈處理每張圖片
             for (const file of files) {
                 const imgElement = await readAndPreviewImage(file);
                 // 進行條碼辨識
                 await decodeBarcode(imgElement, file.name);
             }
             
-            // 顯示最終處理狀態
             if (barcodeResults.length > 0) {
                 statusMessage.textContent = `✅ 本地辨識完成！找到 ${barcodeResults.length} 組條碼結果。`;
                 scanButton.style.display = 'block';
@@ -116,10 +128,12 @@
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.className = 'preview-img';
+                    img.style.marginBottom = '5px';
                     itemDiv.appendChild(img);
                     
                     const p = document.createElement('p');
                     p.textContent = '辨識中...';
+                    p.style.fontSize = '0.8em';
                     itemDiv.appendChild(p);
                     
                     previewContainer.appendChild(itemDiv);
@@ -133,14 +147,14 @@
         async function decodeBarcode(imgElement, fileName) {
             const resultDisplay = imgElement.nextElementSibling;
             try {
-                // 使用 zxing 函式庫，對圖片進行條碼掃描
+                // 使用 decodeFromImage 搭配我們設定的 hints
                 const result = await codeReader.decodeFromImage(imgElement);
                 
                 if (result) {
                     const barcodeData = result.getText();
                     const barcodeFormat = result.getBarcodeFormat().toString();
                     
-                    resultDisplay.textContent = `條碼: ${barcodeData} (${barcodeFormat})`;
+                    resultDisplay.textContent = `條碼: ${barcodeData}`;
                     resultDisplay.style.color = 'green';
                     
                     barcodeResults.push({
@@ -153,9 +167,9 @@
                     resultDisplay.style.color = 'red';
                 }
             } catch (err) {
-                resultDisplay.textContent = `辨識失敗: ${err.message || '未知錯誤'}`;
+                // 這裡捕捉的是程式碼執行錯誤，非辨識失敗
+                resultDisplay.textContent = `辨識失敗`;
                 resultDisplay.style.color = 'red';
-                console.error(`Error decoding barcode for ${fileName}:`, err);
             }
         }
 
@@ -170,14 +184,13 @@
             scanButton.disabled = true;
 
             try {
-                // 將所有條碼結果打包成一個請求發送
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ results: barcodeResults }) // 傳送條碼結果陣列
+                    body: JSON.stringify({ results: barcodeResults }) 
                 });
 
                 const text = await response.text();
@@ -198,7 +211,7 @@
                     
                     // 清空已處理的結果
                     barcodeResults = [];
-                    imageUpload.value = null; // 清空 input 讓使用者可以選取新檔案
+                    imageUpload.value = null; 
                     previewContainer.innerHTML = '';
                     scanButton.style.display = 'none';
                     fileCountSpan.textContent = '0';
@@ -217,5 +230,4 @@
         }
     </script>
 </body>
-
 </html>
