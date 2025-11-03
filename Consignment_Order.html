@@ -327,14 +327,14 @@
                     </select>
                 </div>
                 <div>
-                    <label>尺寸 (庫存 > 0)</label>
+                    <label>尺寸 在庫</label>
                     <select class="size-select" ${!item.name ? 'disabled' : ''}>
                         <option value="">-- 請選擇尺寸 --</option>
                         ${sizeOptions}
                     </select>
                 </div>
                 <div>
-                    <label>顏色 (庫存 > 0)</label>
+                    <label>顏色 在庫</label>
                     <select class="color-select" ${!item.size ? 'disabled' : ''}>
                         <option value="">-- 請選擇顏色 --</option>
                         ${colorOptions}
@@ -543,3 +543,4 @@
 </script>
 </body>
 </html>
+
