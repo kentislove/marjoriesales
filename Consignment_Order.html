@@ -3,25 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>寄賣單建立</title>
+    <title>寄賣作業</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h1 { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        select, input[type="text"], input[type="number"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .field-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .field-group > div { flex: 1; }
-        .product-item { border: 1px dashed #007bff; padding: 15px; margin-bottom: 20px; border-radius: 4px; background-color: #f9f9ff; }
-        .product-item h3 { margin-top: 0; color: #007bff; }
-        .product-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
-        .add-btn, .remove-btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; }
-        .add-btn { background-color: #28a745; color: white; }
-        .remove-btn { background-color: #dc3545; color: white; }
-        .submit-btn { background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 4px; font-size: 1.1rem; cursor: pointer; width: 100%; margin-top: 20px; }
+        :root {
+            --primary-color: #007bff;
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --border-color: #ccc;
+            --accent-color: #28a745;
+            --danger-color: #dc3545;
+        }
+
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background-color: #fff; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+        }
+        h1 { 
+            color: var(--primary-color); 
+            border-bottom: 2px solid var(--primary-color); 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+        }
+        select, input[type="text"], input[type="number"] { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 15px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
+        /* RWD 核心：將 field-group 調整為在小螢幕上垂直堆疊 */
+        .field-group { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 15px; 
+        }
+        .field-group > div { 
+            flex: 1; 
+            min-width: 0; /* 確保內容不會溢出 */
+        }
+        .product-item { 
+            border: 1px dashed var(--primary-color); 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 4px; 
+            background-color: #f9f9ff; 
+        }
+        .product-item h3 { 
+            margin-top: 0; 
+            color: var(--primary-color); 
+        }
+        .product-actions { 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 10px; 
+            margin-top: 10px; 
+        }
+        .add-btn, .remove-btn { 
+            padding: 8px 15px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            white-space: nowrap; /* 防止按鈕文字換行 */
+        }
+        .add-btn { 
+            background-color: var(--accent-color); 
+            color: white; 
+        }
+        .remove-btn { 
+            background-color: var(--danger-color); 
+            color: white; 
+        }
+        .submit-btn { 
+            background-color: var(--primary-color); 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            font-size: 1.1rem; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 20px; 
+        }
         
-        /* 數量與金額小計的樣式調整 */
         #summary-container { 
             margin-top: 20px; 
             padding: 15px; 
@@ -48,6 +129,59 @@
         }
 
         .disabled { opacity: 0.6; pointer-events: none; }
+
+        /* ================================================= */
+        /* RWD 行動裝置優化 (Max Width: 600px)     */
+        /* ================================================= */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            /* 讓多欄位組件在小螢幕上垂直堆疊 */
+            .field-group {
+                flex-direction: column;
+                gap: 0;
+            }
+            .field-group > div {
+                flex: none; /* 讓它們佔滿整行 */
+            }
+            select, input[type="text"], input[type="number"] {
+                margin-bottom: 10px; /* 縮小欄位間距 */
+            }
+
+            /* 確保訂單基本資訊的電商選擇欄位全寬 */
+            .field-group > div[style] {
+                flex: 1 1 100% !important; 
+            }
+            
+            /* 調整產品清單中的欄位佔比 */
+            .product-item .field-group {
+                flex-direction: row; /* 產品規格 (名稱/尺寸/顏色) 保持三欄佈局 */
+                flex-wrap: wrap; 
+            }
+            .product-item .field-group > div {
+                flex-basis: calc(33.33% - 7px); /* 三個欄位平均分佈 (10px gap / 3) */
+            }
+            
+            /* 數量/編號/價格欄位在手機上垂直堆疊 */
+            .product-item .field-group:last-of-type {
+                flex-direction: column; 
+            }
+            .product-item .field-group:last-of-type > div {
+                flex-basis: 100%;
+            }
+
+            /* 總計區塊 */
+            .summary-row {
+                font-size: 1rem;
+            }
+            .summary-row span:first-child {
+                width: auto;
+            }
+        }
     </style>
 </head>
 <body>
@@ -91,7 +225,6 @@
     // 【重要】替換成您的 Google Apps Script 部署 URL
     const API_URL = "https://script.google.com/macros/s/AKfycbyKANC6RockaftLdI114N5_OPkqlTZFcU9x5UHFsX7O0nneICwAW4-G0kR0zgu9Gh0iwA/exec"; 
     
-    // 儲存從 Apps Script 讀取到的資料
     let allProductsData = []; 
     let cart = [];            
 
@@ -101,7 +234,7 @@
     const addProductBtn = document.getElementById('add-product-btn');
     const submitOrderBtn = document.getElementById('submit-order-btn');
     const totalAmountSpan = document.getElementById('total-amount');
-    const totalQtySpan = document.getElementById('total-qty'); // <-- 新增: 數量小計 DOM 
+    const totalQtySpan = document.getElementById('total-qty'); 
 
     // ========== 初始化載入資料 ==========
 
@@ -112,10 +245,8 @@
 
             if (data.status === 'success') {
                 allProductsData = data.products;
-                // 不再需要 ecommerceMap，直接使用 ecomNames
                 const ecomNames = Object.keys(data.ecomMap); 
 
-                // 填充電商下拉選單
                 ecomNames.forEach(name => {
                     const option = document.createElement('option');
                     option.value = name;
@@ -123,7 +254,6 @@
                     ecomSelect.appendChild(option);
                 });
 
-                // 初始加入一個產品項目
                 addProductItem();
             } else {
                 alert('載入資料失敗: ' + data.message);
@@ -137,12 +267,14 @@
     // ========== 核心邏輯函式 ==========
 
     function calculateTotal() {
-        const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-        // 修正：計算總數量小計
-        const totalQty = cart.reduce((sum, item) => sum + (item.qty), 0); 
+        // 只計算有效的 (item.price > 0) 項目
+        const validCart = cart.filter(item => item.price > 0);
+        
+        const totalAmount = validCart.reduce((sum, item) => sum + item.price, 0); 
+        const totalQty = validCart.length; // 數量就是有效產品的數量 (因為每個數量都是 1)
         
         totalAmountSpan.textContent = totalAmount.toLocaleString('zh-TW');
-        totalQtySpan.textContent = totalQty.toLocaleString('zh-TW') + ' 件'; // <-- 新增: 顯示數量小計
+        totalQtySpan.textContent = totalQty.toLocaleString('zh-TW') + ' 件'; 
     }
     
     // 渲染單一產品項目
@@ -216,11 +348,11 @@
                     <input type="text" class="item-no-input" readonly value="${item.itemNo || ''}" placeholder="選定規格後自動帶入">
                 </div>
                 <div>
-                    <label>數量 (固定為 1)</label>
+                    <label>數量</label> 
                     <input type="number" class="qty-input" min="1" max="1" value="1" readonly>
                 </div>
                 <div>
-                    <label>價格 (F欄價格)</label>
+                    <label>價格</label>
                     <input type="text" class="price-input" readonly value="${item.price.toLocaleString('zh-TW')}" placeholder="選定規格後自動帶入">
                 </div>
             </div>
@@ -249,7 +381,6 @@
         const nameSelect = productItemDiv.querySelector('.product-name-select');
         const sizeSelect = productItemDiv.querySelector('.size-select');
         const colorSelect = productItemDiv.querySelector('.color-select');
-        // 數量輸入框不再需要監聽 'input' 事件，因為它被鎖定為 1
         const removeBtn = productItemDiv.querySelector('.remove-btn');
 
         // 產品名稱變更
@@ -259,7 +390,7 @@
             cart[index].color = '';
             cart[index].itemNo = '';
             cart[index].price = 0;
-            cart[index].qty = 1; // 確保重置後數量仍是 1
+            cart[index].qty = 1; 
             renderProductItem(index); 
             calculateTotal();
         });
@@ -297,20 +428,18 @@
         const priceInput = itemDiv.querySelector('.price-input');
         
         if (matchedItem) {
-            // 規格符合，自動帶入產品編號和價格
             item.itemNo = matchedItem['產品編號'];
             item.price = parseInt(matchedItem['價格'].toString().replace(/\D/g, '')) || 0; 
             
             itemNoInput.value = item.itemNo;
             priceInput.value = item.price.toLocaleString('zh-TW');
-            item.qty = 1; // 確保最終數量為 1
+            item.qty = 1; 
         } else {
-            // 規格不符合
             item.itemNo = '';
             item.price = 0;
             itemNoInput.value = '';
             priceInput.value = '';
-            item.qty = 0; // 設為 0，確保計算時不會被計入總金額/總數量
+            item.qty = 0; 
         }
         
         renderProductItem(index);
@@ -325,7 +454,7 @@
             size: '',
             color: '',
             itemNo: '',
-            qty: 0, // 新增時預設為 0
+            qty: 0, 
             price: 0
         };
         cart.push(newItem);
@@ -352,7 +481,6 @@
             return;
         }
         
-        // 篩選出 itemNo 存在且價格大於 0 的有效產品
         const validCart = cart.filter(item => item.itemNo && item.price > 0);
         if (validCart.length === 0) {
             alert('購物車中沒有有效的產品項目！請選擇完整的產品規格。');
@@ -362,7 +490,7 @@
         submitOrderBtn.disabled = true;
         submitOrderBtn.textContent = '提交中...';
 
-        const totalAmount = validCart.reduce((sum, item) => sum + item.price, 0); // 因為數量固定為 1，直接加價格
+        const totalAmount = validCart.reduce((sum, item) => sum + item.price, 0); 
         
         const payload = {
             ecomName: ecomSelect.value,
