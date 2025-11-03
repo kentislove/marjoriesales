@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寄賣單建立 (刷取標籤)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --border-color: #ccc;
+            --accent-color: #28a745;
+            --danger-color: #dc3545;
+            --loading-color: #ffc107;
+        }
+
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background-color: #fff; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            position: relative;
+        }
+        h1 { 
+            color: var(--primary-color); 
+            border-bottom: 2px solid var(--primary-color); 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+        }
+        select, input[type="text"], input[type="number"] { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 15px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
+        .field-group { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 15px; 
+        }
+        .field-group > div { 
+            flex: 1; 
+            min-width: 0; 
+        }
+        .product-item { 
+            border: 1px dashed var(--primary-color); 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 4px; 
+            background-color: #f9f9ff; 
+        }
+        .product-item h3 { 
+            margin-top: 0; 
+            color: var(--primary-color); 
+        }
+        .product-actions { 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 10px; 
+            margin-top: 10px; 
+        }
+        .add-btn, .remove-btn { 
+            padding: 8px 15px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            white-space: nowrap; 
+        }
+        .add-btn { 
+            background-color: var(--accent-color); 
+            color: white; 
+        }
+        .remove-btn { 
+            background-color: var(--danger-color); 
+            color: white; 
+        }
+        .submit-btn { 
+            background-color: var(--primary-color); 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            font-size: 1.1rem; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 20px; 
+        }
+        
+        #summary-container { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background-color: #e9ecef; 
+            border-radius: 4px; 
+        }
+        .summary-row {
+            display: flex;
+            justify-content: flex-end;
+            font-size: 1.2rem; 
+            font-weight: bold;
+            line-height: 1.5;
+            text-align: right;
+            gap: 20px;
+        }
+        .summary-row span:first-child {
+            width: 150px;
+            text-align: left;
+        }
+        .summary-row:last-child {
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+
+        .disabled-ui { 
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* 條碼輸入區塊的樣式 */
+        #barcode-input-group {
+            border: 2px solid var(--accent-color);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #e6ffec;
+        }
+        #barcode-input-group input {
+            border: 1px solid var(--accent-color);
+            margin-bottom: 0;
+            font-size: 1.1rem;
+        }
+        #barcode-input-group label {
+            color: #000;
+        }
+
+        /* 載入指示器 */
+        #loading-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+
+        /* ================================================= */
+        /* RWD 行動裝置優化 (Max Width: 600px)             */
+        /* ================================================= */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .field-group {
+                flex-direction: column;
+                gap: 0;
+            }
+            .field-group > div {
+                flex: none; 
+            }
+            select, input[type="text"], input[type="number"] {
+                margin-bottom: 10px; 
+            }
+
+            .field-group > div[style] {
+                flex: 1 1 100% !important; 
+            }
+            
+            .product-item .field-group {
+                flex-direction: row; 
+                flex-wrap: wrap; 
+            }
+            .product-item .field-group > div {
+                flex-basis: calc(33.33% - 7px); 
+            }
+            
+            .product-item .field-group:last-of-type {
+                flex-direction: column; 
+            }
+            .product-item .field-group:last-of-type > div {
+                flex-basis: 100%;
+            }
+
+            .summary-row {
+                font-size: 1rem;
+            }
+            .summary-row span:first-child {
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-content">
+    
+    <div id="loading-indicator">
+        <i class="fa-solid fa-spinner fa-spin"></i> 資料載入中... 請稍候
+    </div>
+
+    <h1>寄賣單建立 (刷取標籤)</h1>
+    
+    <div class="field-group disabled-ui" id="ecom-group">
+        <div style="flex: 0 0 50%;"> 
+            <label for="ecom-select">選擇電商名稱</label>
+            <select id="ecom-select">
+                <option value="">-- 請選擇 --</option>
+            </select>
+        </div>
+    </div>
+    
+    <hr>
+    
+    <div id="barcode-input-group" class="disabled-ui">
+        <label for="barcode-input">
+            <i class="fa-solid fa-barcode"></i> 條碼掃描
+            <span style="font-weight: normal; color: #555; font-size: 0.9em;">(請刷入產品條碼，程式碼只讀取右邊 12 位進行比對)</span>
+        </label>
+        <input type="text" id="barcode-input" placeholder="請刷入產品條碼..." autocomplete="off" disabled>
+    </div>
+
+    <h2>產品清單</h2>
+    <div id="product-list-container">
+        </div>
+
+    <button class="add-btn" id="add-product-btn" disabled title="請使用條碼掃描新增產品">
+        <i class="fa-solid fa-plus"></i> 新增產品
+    </button>
+
+    <div id="summary-container">
+        <div class="summary-row">
+            <span>總數量小計:</span> <span id="total-qty">0 件</span>
+        </div>
+        <div class="summary-row">
+            <span>總金額小計:</span> NT$ <span id="total-amount">0</span>
+        </div>
+    </div>
+
+    <button class="submit-btn disabled-ui" id="submit-order-btn" disabled>
+        提交寄賣單
+    </button>
+</div>
+
+<script>
+    // 【重要】替換成您的 Google Apps Script 部署 URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbyKANC6RockaftLdI114N5_OPkqlTZFcU9x5UHFsX7O0nneICwAW4-G0kR0zgu9Gh0iwA/exec"; 
+    
+    let allProductsData = []; 
+    let cart = [];            
+
+    // DOM 元素
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const ecomGroup = document.getElementById('ecom-group');
+    const ecomSelect = document.getElementById('ecom-select');
+    const productListContainer = document.getElementById('product-list-container');
+    const addProductBtn = document.getElementById('add-product-btn');
+    const submitOrderBtn = document.getElementById('submit-order-btn');
+    const totalAmountSpan = document.getElementById('total-amount');
+    const totalQtySpan = document.getElementById('total-qty'); 
+    const barcodeInputGroup = document.getElementById('barcode-input-group');
+    const barcodeInput = document.getElementById('barcode-input'); 
+    
+
+    // Helper functions for UI state
+    function enableUI() {
+        loadingIndicator.classList.add('hidden');
+        ecomGroup.classList.remove('disabled-ui');
+        barcodeInputGroup.classList.remove('disabled-ui');
+        submitOrderBtn.classList.remove('disabled-ui');
+        
+        barcodeInput.disabled = false;
+        submitOrderBtn.disabled = false;
+        
+        // 載入成功後將焦點移至條碼輸入框
+        barcodeInput.focus();
+    }
+
+    // ========== 初始化載入資料 (修正) ==========
+
+    async function loadInitialData() {
+        // 初始狀態：顯示載入中，禁用功能
+        loadingIndicator.classList.remove('hidden');
+        
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json(); 
+
+            if (data.status === 'success') {
+                allProductsData = data.products;
+                const ecomNames = Object.keys(data.ecomMap); 
+
+                ecomNames.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    ecomSelect.appendChild(option);
+                });
+                
+                // 載入成功，啟用 UI
+                enableUI();
+
+            } else {
+                alert('載入資料失敗。請檢查 Apps Script 錯誤日誌。錯誤訊息: ' + data.message);
+                loadingIndicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> 資料載入失敗';
+                loadingIndicator.style.color = 'var(--danger-color)';
+            }
+        } catch (error) {
+            console.error('API 錯誤:', error);
+            alert('連線錯誤，請檢查網路、Apps Script URL 或後端 CORS/JSON 格式。'); 
+            loadingIndicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> 網路連線錯誤';
+            loadingIndicator.style.color = 'var(--danger-color)';
+        }
+    }
+
+    // ========== 條碼選取邏輯 (核心功能) ==========
+    
+    function findProductByBarcode(barcode) {
+        // 1. 清理輸入條碼：移除所有非數字字符 (如空格、連字符等)
+        const cleanedBarcode = barcode.replace(/\D/g, ''); 
+        
+        // 2. 截取條碼右邊 12 位數字作為匹配鍵 (此處確保只讀取右邊12位)
+        const matchKey = cleanedBarcode.slice(-12);
+        
+        // 3. 尋找匹配產品編號的產品
+        const matchedProduct = allProductsData.find(p => 
+            // 匹配邏輯：將 Sheet1 中的產品編號也清理並截取右邊12位進行比對
+            ((p['產品編號'] || '').toString().replace(/\D/g, '')).slice(-12) === matchKey && 
+            p['數量'] > 0 // 必須在庫
+        );
+        
+        if (matchedProduct) {
+            // 找到匹配且有庫存的產品
+            return {
+                name: matchedProduct['產品名稱'],
+                size: matchedProduct['尺寸'] || '無尺寸',
+                color: matchedProduct['顏色'] || '無顏色',
+                itemNo: matchedProduct['產品編號'],
+                price: parseInt(matchedProduct['價格'].toString().replace(/\D/g, '')) || 0
+            };
+        }
+        return null;
+    }
+    
+    function addProductByBarcode(barcode) {
+        // 檢查 data 是否已載入
+        if (allProductsData.length === 0) {
+            alert("資料尚未載入完成，請稍候。");
+            return;
+        }
+
+        const productInfo = findProductByBarcode(barcode);
+        
+        if (!productInfo) {
+            alert(`找不到條碼為 ${barcode} 且在庫的產品。請確認條碼和庫存。`);
+            barcodeInput.value = '';
+            barcodeInput.focus();
+            return;
+        }
+
+        // 檢查該產品是否已在購物車中 (避免重複掃描)
+        const existingItem = cart.find(item => item.itemNo === productInfo.itemNo);
+        if (existingItem) {
+            alert(`產品 ${productInfo.itemNo} 已在清單中。`);
+            barcodeInput.value = '';
+            barcodeInput.focus();
+            return;
+        }
+
+        // 將產品加入購物車
+        const newItem = {
+            name: productInfo.name,
+            size: productInfo.size,
+            color: productInfo.color,
+            itemNo: productInfo.itemNo,
+            qty: 1, // 數量固定為 1
+            price: productInfo.price
+        };
+        cart.push(newItem);
+        
+        // 渲染新項目並更新總計
+        renderItemAfterRemove(newItem, cart.length - 1); 
+        calculateTotal();
+        
+        // 清空輸入框準備下次掃描
+        barcodeInput.value = '';
+        barcodeInput.focus();
+    }
+    
+    // ========== 核心邏輯函式 (計算與渲染) ==========
+
+    function calculateTotal() {
+        const validCart = cart.filter(item => item.itemNo && item.qty > 0);
+        
+        const totalAmount = validCart.reduce((sum, item) => sum + item.price, 0); 
+        const totalQty = validCart.length; 
+        
+        totalAmountSpan.textContent = totalAmount.toLocaleString('zh-TW');
+        totalQtySpan.textContent = totalQty.toLocaleString('zh-TW') + ' 件'; 
+    }
+    
+    // 獨立的渲染函式，用於新增和刪除後重繪
+    function renderItemAfterRemove(item, index) {
+        const productItemDiv = document.createElement('div');
+        productItemDiv.className = 'product-item';
+        productItemDiv.dataset.index = index;
+
+        productItemDiv.innerHTML = `
+            <h3>產品項目 #${index + 1}</h3>
+            <div class="field-group">
+                <div><label>產品名稱</label><input type="text" value="${item.name}" readonly></div>
+                <div><label>尺寸 在庫</label><input type="text" value="${item.size}" readonly></div>
+                <div><label>顏色 在庫</label><input type="text" value="${item.color}" readonly></div>
+            </div>
+            <div class="field-group">
+                <div><label>產品編號</label><input type="text" class="item-no-input" readonly value="${item.itemNo}"></div>
+                <div><label>數量</label><input type="number" class="qty-input" min="1" max="1" value="1" readonly></div>
+                <div><label>價格</label><input type="text" class="price-input" readonly value="${item.price.toLocaleString('zh-TW')}"></div>
+            </div>
+            <div class="product-actions">
+                <button class="remove-btn" data-index="${index}"><i class="fa-solid fa-trash"></i> 刪除</button>
+            </div>
+        `;
+        
+        // 如果是新增，就添加到列表底部
+        if (index === productListContainer.children.length) {
+            productListContainer.appendChild(productItemDiv);
+        }
+        
+        const removeBtn = productItemDiv.querySelector('.remove-btn');
+        removeBtn.addEventListener('click', () => {
+             // 點擊刪除時，重新找出正確的索引
+             const targetIndex = Array.from(productListContainer.children).indexOf(productItemDiv);
+             if (targetIndex !== -1) {
+                 removeProductItem(targetIndex);
+             }
+        });
+    }
+
+    // ========== 動作函式 ==========
+    
+    function removeProductItem(index) {
+        cart.splice(index, 1);
+        
+        // 刪除後，清空容器並重新繪製所有項目 (確保 index 正確)
+        productListContainer.innerHTML = '';
+        cart.forEach((item, i) => {
+             renderItemAfterRemove(item, i);
+        });
+        
+        calculateTotal();
+        barcodeInput.focus();
+    }
+    
+    async function submitOrder() {
+        if (!ecomSelect.value) {
+            alert('請選擇電商名稱！');
+            ecomSelect.focus();
+            return;
+        }
+        
+        const validCart = cart.filter(item => item.itemNo && item.price > 0);
+        if (validCart.length === 0) {
+            alert('請掃描產品條碼以新增產品。');
+            return;
+        }
+
+        submitOrderBtn.disabled = true;
+        submitOrderBtn.textContent = '提交中...';
+
+        const totalAmount = validCart.reduce((sum, item) => sum + item.price, 0); 
+        
+        const payload = {
+            ecomName: ecomSelect.value,
+            totalAmount: totalAmount,
+            cartItems: validCart
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain' 
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (result.status === "success") {
+                alert(`🎉 寄賣單提交成功！訂單編號: ${result.orderId}。總金額: NT$${totalAmount.toLocaleString('zh-TW')}`);
+                
+                // 重置表單
+                ecomSelect.value = '';
+                cart = [];
+                productListContainer.innerHTML = ''; 
+                calculateTotal();
+                barcodeInput.focus();
+
+            } else {
+                alert('訂單提交失敗，請聯繫管理員。錯誤: ' + result.message);
+            }
+
+        } catch (error) {
+            console.error('API 呼叫失敗:', error);
+            alert('網路連線錯誤或後台服務無法連接，請稍後再試。');
+        } finally {
+            submitOrderBtn.disabled = false;
+            submitOrderBtn.textContent = '提交寄賣單';
+        }
+    }
+
+    // ========== 綁定與初始化 ==========
+    
+    // 綁定條碼輸入事件：當使用者按下 Enter (條碼機通常會模擬 Enter)
+    barcodeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && barcodeInput.value.trim() !== '') {
+            e.preventDefault(); 
+            addProductByBarcode(barcodeInput.value.trim());
+        }
+    });
+
+    // 禁用手動新增按鈕 (強制使用條碼)
+    addProductBtn.removeEventListener('click', () => {}); 
+    
+    submitOrderBtn.addEventListener('click', submitOrder);
+
+    // 初始化載入
+    loadInitialData();
+
+</script>
+</body>
+</html>
