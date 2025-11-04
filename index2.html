@@ -1515,8 +1515,12 @@
                 }
                 return response.json();
             })
-            .then(data => {
+            // 修正核心：將 data 改為 result，並提取 result.products
+            .then(result => {
                 productListDiv.innerHTML = '';
+                
+                // 從 GAS 返回的物件中提取產品陣列
+                const data = result.products; 
 
                 if (!Array.isArray(data) || data.length === 0) {
                     productListDiv.innerHTML = '<p>目前沒有產品資料。</p>';
@@ -1593,5 +1597,3 @@
 </body>
 
 </html>
-
-
